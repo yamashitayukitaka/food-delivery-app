@@ -1,10 +1,8 @@
+import TextToggleButton from "./text-toggle-button"
+
 // 🔹 React の children とは
 // children は特殊な Props
 // 親コンポーネントのタグ内に挟まれた要素を、子コンポーネントで受け取るための仕組みです。
-
-import TextToggleButton from "./text-toggle-button"
-
-
 
 // // 親コンポーネント
 // <MyComponent>
@@ -38,7 +36,7 @@ interface SectionProps {
 export default function Section({ children, title }: SectionProps) {
   return (
     <section>
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between py-3">
         <h2 className="text-2xl font-bold">{title}</h2>
         <TextToggleButton />
       </div>

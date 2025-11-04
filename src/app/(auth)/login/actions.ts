@@ -24,7 +24,6 @@ export async function login() {
   }
 }
 
-
 export async function logout() {
   const supabase = await createClient()
   // -----------------------------------------------------
@@ -49,9 +48,7 @@ export async function logout() {
   // }
 
   // ★出力されたオブジェクトの のうちerror プロパティのみを分割代入する。
-
   // -----------------------------------------------------
-
   if (error) {
     console.error(error)
     // console.error は赤文字で出力され、基本的には console.log と同じようにメッセージを表示する。
