@@ -13,7 +13,9 @@ export default function RestaurantCard({ id }: { id: string }) {
           className='object-cover'
           src={'/no_image.png'}
           fill
-          alt="restaurant image" />
+          alt="restaurant image"
+          sizes="(max-width:1280px) 25vw, 280px"
+        />
       </div>
       <div className='flex justify-between'>
         <p className='font-bold'>name</p>
