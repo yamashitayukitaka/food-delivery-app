@@ -3,9 +3,6 @@
 // URLに影響しないため、フロントページとして機能します。
 // ログイン後専用のファイル群だから(private)にした
 
-
-
-
 // ✅補足すると、Next.js（App Router）ではフォルダ名を ()で囲む と「URLパスに影響しないグルーピングフォルダ」として扱われます。
 // したがって：
 
@@ -13,7 +10,6 @@
 //  ├─ (private)/
 //  │    └─ page.tsx
 //  └─ layout.tsx
-
 
 // この構成では、
 // (private) は ルーティング上無視される ため、
@@ -24,9 +20,10 @@
 import Section from "@/components/ui/section";
 import CarouselContainer from "@/components/ui/carousel-container";
 import RestaurantCard from "@/components/ui/restaurant-card";
+import { fetchRamenRestaurants } from "@/lib/restaurants/api"
 
-
-export default function Home() {
+export default async function Home() {
+  await fetchRamenRestaurants();
   return (
     <Section title="近くのお店">
       <CarouselContainer slideToShow={4}>
@@ -69,6 +66,8 @@ export default function Home() {
         がPropsとしてCarouselContainerに渡される */}
 
       </CarouselContainer>
+
     </Section>
+
   );
 }

@@ -1,3 +1,10 @@
+// ✅下記async function　fetchRamenRestaurants()関数は3つのPromiseを返す
+// 1.async function fetchRamenRestaurants()自体がPromiseを返す。(async function 自体も Promiseを返す）
+// 2.fetch() は Promise を返す
+// 3.response.json() も Promise を返す
+// ★注）async function　fetchRamenRestaurants()関数はasyncでラップしているので非同期関数になるので、
+// 別ファイルなどで呼び出す際、後続のコードが、返り値であるdataを扱う際は、dataが返ってくるまで、後続のコードの実行を待機される必要があるのでawaitを付与する必要がある
+
 export async function fetchRamenRestaurants() {
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY!;
@@ -11,24 +18,26 @@ export async function fetchRamenRestaurants() {
     // ✅places APIから受け取りたいデータを指定
   };
   const requestBody = {
-    // "includedTypes": ["restaurant"],
+    includedPrimaryTypes: ["ramen_restaurant"],
+    // primaryTypeがramen_restaurantの箇所のみを取得する
     maxResultCount: 10,
     // 取得するデータの件数
     locationRestriction: {
       // 取得するデータの地点
       circle: {
         center: {
-          latitude: 37.7937,
+          latitude: 35.6669248,//渋谷
           // 緯度
-          longitude: -122.3965
+          longitude: 139.6514163,//渋谷
           // 経度
         },
-        radius: 500.0
+        radius: 1000.0
         // 半径500メートル
       }
     },
-    langageCode: "ja",
+    languageCode: "ja",
     // 日本語でデータを取得する
+    rankPreference: "DISTANCE",
   }
   const response = await fetch(url, {
     // const response = await fetch(url)とした場合、fetchは2方向の役割がある
@@ -41,13 +50,45 @@ export async function fetchRamenRestaurants() {
     body: JSON.stringify(requestBody),
     // bodyは実際に送るデータのこと
     // ✅JSON.stringify は JavaScript のオブジェクト → JSON 文字列 に変換する関数
-    headers: header
+    headers: header,
     // ✅headersは
     // 「リクエストやレスポンスのメタ情報を定義する部分」です。
     //  つまり、送受信するデータの“扱い方や形式”を示す設定情報です。
+
+    next: { revalidate: 86400 }
+    // -----------------------------------------------
+    // 24時間経ったらキャッシュを新しく更新する(✅キャッシュ（cache）**とは、後で再利用するために一時的に保存しておくデータのこと)
+    // -----------------------------------------------
+
+    // -----------------------------------------------
+    // ✅キャッシュ更新の流れ
+    // ★1．初回アクセス時
+    // fetch が実行され、API（エンドポイント）にアクセス。
+    // 取得したレスポンスをキャッシュに保存。
+
+    // ★2．24時間以内の2回目以降のアクセス
+    // API には再アクセスせず、キャッシュから返す（高速）。
+
+    // ★3．24時間経過後の最初のアクセス
+    // Next.js が「キャッシュの有効期限が切れた」と判断し、
+    // → API に再アクセスして新しいデータを取得。
+    // → 取得した新データでキャッシュを上書き。
+    // -----------------------------------------------
+
+    // -----------------------------------------------
+    // ✅キャッシュが利用される条件は以下
+    // 同じ内容（同じエンドポイント・headers・requestBody）で2回目以降呼び出した場合にキャッシュが利用される
+    // -----------------------------------------------
+
   })
 
+  if (!response.ok) {
+    const errorData = await response.json()
+    console.error(errorData)
+    return { error: `NearbySearchリクエスト失敗:${response.status}` }
+  }
+
   const data = await response.json();
-  // await response.json();これはJSON形式で返ってきたデータを Javascriptのオブジェクト形式にする
+  console.log(data)
   return data;
 }
