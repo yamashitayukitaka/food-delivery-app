@@ -5,6 +5,10 @@
 // ★注）async function　fetchRamenRestaurants()関数はasyncでラップしているので非同期関数になるので、
 // 別ファイルなどで呼び出す際、後続のコードが、返り値であるdataを扱う際は、dataが返ってくるまで、後続のコードの実行を待機される必要があるのでawaitを付与する必要がある
 
+import { GooglePlacesSearchApiResponse, Restaurant } from "@/types";
+import { transformPlaceResults } from "./utils";
+import { log } from "console";
+
 export async function fetchRamenRestaurants() {
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY!;
@@ -14,7 +18,7 @@ export async function fetchRamenRestaurants() {
     "Content-Type": "application/json",
     // ✅bodyがJSON形式であることを伝える
     "X-Goog-Api-Key": apiKey,
-    "X-Goog-FieldMask": "places.id,places.displayName,places.types,places.primaryType,places.photos",
+    "X-Goog-FieldMask": "places.id,places.displayName,places.primaryType,places.photos",
     // ✅places APIから受け取りたいデータを指定
   };
   const requestBody = {
@@ -88,7 +92,27 @@ export async function fetchRamenRestaurants() {
     return { error: `NearbySearchリクエスト失敗:${response.status}` }
   }
 
-  const data = await response.json();
+  const data: GooglePlacesSearchApiResponse = await response.json();
   console.log(data)
-  return data;
+
+  if (!data.places) {
+    return { data: [] }
+  }
+
+  const nearbyRamenPlaces = data.places
+
+  const RamenRestaurants = await transformPlaceResults(nearbyRamenPlaces)
+  console.log(RamenRestaurants);
+
 }
+
+
+export async function getPhotoUrl(name: string, maxWidth: number = 400): Promise<string> {
+  // 'use cache'を使用する場合は、非同期関数にする必要があるのでasyncを付与する
+  'use cache'
+  // ✅これを使用すれば、2回目以降呼び出す際、getPhotoUrlの引数が1回目と同一であればキャッシュが利用される
+  console.log('getPhotoUrl実行');
+  const apiKey = process.env.GOOGLE_API_KEY!;
+  const url = `https://places.googleapis.com/v1/${name}/media?key=${apiKey}&maxWidthPx=${maxWidth}`;
+  return url;
+}   
