@@ -22,24 +22,54 @@ import CarouselContainer from "@/components/ui/carousel-container";
 import RestaurantCard from "@/components/ui/restaurant-card";
 import { fetchRamenRestaurants } from "@/lib/restaurants/api"
 
+
 export default async function Home() {
-  await fetchRamenRestaurants();
+  const { data: nearbyRamenRestaurants, error } = await fetchRamenRestaurants();
+
+  //  fetchRamenRestaurants() は定義側で
+  // { data: RamenRestaurants }
+  // { error: `NearbySearchリクエスト失敗:${response.status}` }
+  // { data: [] }
+  // を返しているので
+  // 分割代入でキー名を変数名することでそれぞれの値を受け取ることができる
+  // ✅上記の場合は一旦dataという変数名で値受け取ってから変数名を nearbyRamenRestaurants に変更している
+
+
+
   return (
-    <Section title="近くのお店">
-      <CarouselContainer slideToShow={4}>
-        {Array.from({ length: 5 }).map((_, index) => (
-          // fromは未定義の値の配列を指定した個数分作成するためのメソッド
+
+    <>
+      {!nearbyRamenRestaurants ? (
+        <p>{error}</p>
+      ) : nearbyRamenRestaurants.length > 0 ? (
+        <Section title="近くのお店">
+          <CarouselContainer slideToShow={4}>
+            {nearbyRamenRestaurants.map((restaurant) => (
+              <RestaurantCard restaurant={restaurant} />
+            ))}
+          </CarouselContainer>
+        </Section>
+      ) : (
+        <p>近くにラーメン店がありません</p>
+      )}
+
+
+      {/* <Section title="近くのお店">
+      <CarouselContainer slideToShow={4}> */}
+
+      {/* {Array.from({ length: 5 }).map((_, index) => ( */}
+      {/* // fromは未定義の値の配列を指定した個数分作成するためのメソッド
           // 構造
           // [undefined, undefined, undefined, undefined, undefined]
 
           // .map((_, index)
           // mapの引数は第一引数に配列の各要素が入るが今回は使わないので無視するという意味で_, 第二引数にインデックス番号を取得している
 
-          // ★つまり全体の意図は：「5回ループして <RestaurantCard /> をインデックス番号をkeyとして描画する」
-          <RestaurantCard key={index} id={index} />
-        ))}
+          // ★つまり全体の意図は：「5回ループして <RestaurantCard /> をインデックス番号をkeyとして描画する」 */}
+      {/* <RestaurantCard key={index} id={index} /> */}
+      {/* ))} */}
 
-        {/* ✅上記のmap展開後の構造イメージ 
+      {/* ✅上記のmap展開後の構造イメージ 
         [
           <RestaurantCard key={0} />,
           <RestaurantCard key={1} />,
@@ -64,10 +94,10 @@ export default async function Home() {
         　 <RestaurantCard key={4} />,
         ]
         がPropsとしてCarouselContainerに渡される */}
+      {/* </CarouselContainer>
+      </Section> */}
 
-      </CarouselContainer>
-
-    </Section>
+    </>
 
   );
 }

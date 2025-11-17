@@ -10,6 +10,17 @@ const nextConfig: NextConfig = {
     useCache: true,
   },
   //use cache を有効にする設定
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'places.googleapis.com',
+      },
+    ],
+  },
+
 };
 
 export default nextConfig;
+
+

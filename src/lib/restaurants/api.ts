@@ -7,7 +7,7 @@
 
 import { GooglePlacesSearchApiResponse, Restaurant } from "@/types";
 import { transformPlaceResults } from "./utils";
-import { log } from "console";
+
 
 export async function fetchRamenRestaurants() {
   const url = "https://places.googleapis.com/v1/places:searchNearby";
@@ -90,6 +90,7 @@ export async function fetchRamenRestaurants() {
     const errorData = await response.json()
     console.error(errorData)
     return { error: `NearbySearchリクエスト失敗:${response.status}` }
+    // ✅errorというキー名で値に`NearbySearchリクエスト失敗:${response.status}`をもつオブジェクトを返す
   }
 
   const data: GooglePlacesSearchApiResponse = await response.json();
@@ -102,8 +103,10 @@ export async function fetchRamenRestaurants() {
   const nearbyRamenPlaces = data.places
 
   const RamenRestaurants = await transformPlaceResults(nearbyRamenPlaces)
-  console.log(RamenRestaurants);
-
+  // console.log(RamenRestaurants);
+  // returnしないと呼び出し側で値を受け取れない。呼び出し側でundefinedになる  
+  return { data: RamenRestaurants }
+  // ✅dataというキー名で値にRamenRestaurantsの中身をもつオブジェクトを返す
 }
 
 
