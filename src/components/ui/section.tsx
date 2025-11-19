@@ -1,4 +1,7 @@
-import TextToggleButton from "./text-toggle-button"
+'use client'
+import { useState } from "react"
+import { Button } from "./button"
+
 
 // 🔹 React の children とは
 // children は特殊な Props
@@ -22,6 +25,7 @@ import TextToggleButton from "./text-toggle-button"
 interface SectionProps {
   children: React.ReactNode
   title: string
+  expandedContent?: React.ReactNode
 }
 // ✅React.ReactNode = React がレンダリング可能な要素全ての型
 // JSX、文字列、数値、配列、null/undefined も含む
@@ -33,14 +37,22 @@ interface SectionProps {
 // const [name, setName] = useState<string>(""); // 文字列型
 // const [isOpen, setIsOpen] = useState<boolean>(false); // 真偽値型
 
-export default function Section({ children, title }: SectionProps) {
+export default function Section({ children, title, expandedContent }: SectionProps) {
+
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const handleChange = () => {
+    setIsExpanded((prev) => !prev);
+    // ✅setIsExpanded(!isExpanded)は期待通りにトグルされない可能性があるので避ける
+  }
   return (
     <section>
       <div className="flex items-center justify-between py-3">
         <h2 className="text-2xl font-bold">{title}</h2>
-        <TextToggleButton />
+        <Button onClick={handleChange}>
+          {isExpanded ? "表示を戻す" : "すべて表示"}
+        </Button>
       </div>
-      {children}
+      {isExpanded ? children : expandedContent}
     </section>
   )
 }

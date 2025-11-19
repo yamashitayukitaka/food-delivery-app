@@ -21,10 +21,13 @@ import Section from "@/components/ui/section";
 import CarouselContainer from "@/components/ui/carousel-container";
 import RestaurantCard from "@/components/ui/restaurant-card";
 import { fetchRamenRestaurants } from "@/lib/restaurants/api"
+import { fetchRestaurants } from "@/lib/restaurants/api"
+import RestaurantList from "@/components/ui/restaurant-list";
 
 
 export default async function Home() {
-  const { data: nearbyRamenRestaurants, error } = await fetchRamenRestaurants();
+  const { data: nearbyRamenRestaurants, error: nearbyRamenRestaurantError } = await fetchRamenRestaurants();
+  const { data: nearbyRestaurants, error: restaurantsError } = await fetchRestaurants();
 
   //  fetchRamenRestaurants() は定義側で
   // { data: RamenRestaurants }
@@ -34,15 +37,32 @@ export default async function Home() {
   // 分割代入でキー名を変数名することでそれぞれの値を受け取ることができる
   // ✅上記の場合は一旦dataという変数名で値受け取ってから変数名を nearbyRamenRestaurants に変更している
 
-
-
   return (
 
     <>
+
+      {/* レストラン情報表示 */}
+      {!nearbyRestaurants ? (
+        <p>{restaurantsError}</p>
+      ) : nearbyRestaurants.length > 0 ? (
+        <Section title="近くのお店" expandedContent={<RestaurantList restaurants={nearbyRestaurants} />}>
+          {/* ✅コンポーネント出力タグはpropsとして渡すことができる */}
+          <CarouselContainer slideToShow={4}>
+            {nearbyRestaurants.map((restaurant) => (
+              <RestaurantCard restaurant={restaurant} />
+            ))}
+          </CarouselContainer>
+        </Section>
+      ) : (
+        <p>近くにレストランがありません</p>
+      )}
+
+
+      {/* ラーメン店情報表示 */}
       {!nearbyRamenRestaurants ? (
-        <p>{error}</p>
+        <p>{nearbyRamenRestaurantError}</p>
       ) : nearbyRamenRestaurants.length > 0 ? (
-        <Section title="近くのお店">
+        <Section title="近くのラーメン店" expandedContent={<RestaurantList restaurants={nearbyRamenRestaurants} />}>
           <CarouselContainer slideToShow={4}>
             {nearbyRamenRestaurants.map((restaurant) => (
               <RestaurantCard restaurant={restaurant} />
