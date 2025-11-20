@@ -8,7 +8,7 @@ interface RestaurantListProps {
 export default function RestaurantList({ restaurants }: RestaurantListProps) {
   return (
     <ul className="grid grid-cols-4 gap-4">
-      {restaurants.map((restaurant: Restaurant) => (
+      {restaurants.map((restaurant) => (
         <RestaurantCard key={restaurant.id} restaurant={restaurant} />
       ))}
     </ul>

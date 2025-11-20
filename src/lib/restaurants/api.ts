@@ -3,6 +3,8 @@ import { transformPlaceResults } from "./utils";
 
 // 近くのレストランを取得
 export async function fetchRestaurants() {
+  // throw new Error('testエラー');
+  // 意図的にエラーを起こさせる
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY!;
   // ✅はい、その ! は 「この値は絶対に undefined（または null）にならない」
