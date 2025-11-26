@@ -23,6 +23,7 @@ import RestaurantCard from "@/components/ui/restaurant-card";
 import { fetchRamenRestaurants } from "@/lib/restaurants/api"
 import { fetchRestaurants } from "@/lib/restaurants/api"
 import RestaurantList from "@/components/ui/restaurant-list";
+import Categories from "@/components/ui/categories";
 
 
 export default async function Home() {
@@ -37,9 +38,12 @@ export default async function Home() {
   // 分割代入でキー名を変数名することでそれぞれの値を受け取ることができる
   // ✅上記の場合は一旦dataという変数名で値受け取ってから変数名を nearbyRamenRestaurants に変更している
 
-  return (
 
+
+  return (
     <>
+
+      <Categories />
 
       {/* レストラン情報表示 */}
       {!nearbyRestaurants ? (

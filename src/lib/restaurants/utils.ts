@@ -33,10 +33,10 @@ export async function transformPlaceResults(restaurants: PlaceSearchResult[]) {
       primaryType: restaurant.primaryType,
       // ✅値がundefinedになる可能性がある場合は?を付与する必要は無い
 
-      // photoUrl: restaurant.photos?.[0]?.name
-      //   ? await getPhotoUrl(restaurant.photos[0].name)
-      //   : "/no_image.png",
-      photoUrl: "/no_image.png",
+      photoUrl: restaurant.photos?.[0]?.name
+        ? await getPhotoUrl(restaurant.photos[0].name)
+        : "/no_image.png",
+      // photoUrl: "/no_image.png",
     }
   ))
   const data = await Promise.all(promises)
