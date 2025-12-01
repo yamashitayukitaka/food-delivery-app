@@ -33,13 +33,13 @@ interface SectionProps {
 
 // ✅useStateの型定義は<>型で行う
 // 例
-// const [count, setCount] = useState<number>(0); // 数値型
+// const [count, setCount] = useState<number>(0); // 数値型s
 // const [name, setName] = useState<string>(""); // 文字列型
 // const [isOpen, setIsOpen] = useState<boolean>(false); // 真偽値型
 
 export default function Section({ children, title, expandedContent }: SectionProps) {
 
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const handleChange = () => {
     setIsExpanded((prev) => !prev);
     // ✅setIsExpanded(!isExpanded)は期待通りにトグルされない可能性があるので避ける
@@ -52,7 +52,7 @@ export default function Section({ children, title, expandedContent }: SectionPro
           {isExpanded ? "表示を戻す" : "すべて表示"}
         </Button>
       </div>
-      {isExpanded ? children : expandedContent}
+      {isExpanded ? expandedContent : children}
     </section>
   )
 }

@@ -68,9 +68,7 @@ console.log(data.name)
 console.log(data.primaryType)など
 
 
-
-
-
+★ok:falseの場合はbody があれば、response.json()でエラーメッセージなどの内容が取得できる
 
 
 
