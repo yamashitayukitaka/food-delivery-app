@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 import MenuSheet from "@/components/ui/menu-sheet";
+import PlaceSearchBar from './place-search-bar';
 const Header = () => {
   return (
     <header className="bg-background h-16 fixed top-0 left-0 w-full z-50">
@@ -10,7 +11,9 @@ const Header = () => {
           <Link href="/">Delivery APP</Link>
         </div>
         <div>住所を選択</div>
-        <div className="flex-1 bg-yellow-200">検索バー</div>
+        <div className="flex-1">
+          <PlaceSearchBar />
+        </div>
         <div>カート</div>
       </div>
     </header>

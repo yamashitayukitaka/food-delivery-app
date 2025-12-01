@@ -24,7 +24,7 @@ export default function Category({ category, onClick, select }: CategoryProps) {
     */}
 
       <div className={cn("relative aspect-square overflow-hidden rounded-full", select && "bg-green-200")}>
-        ✅shade-cn-uiのcnを使えば上記のような書き方ができる。下記コードと上記コードは同意
+        {/* ✅shade-cn-uiのcnを使えば上記のような書き方ができる。下記コードと上記コードは同意 */}
         {/* <div className={`relative aspect-square overflow-hidden rounded-full ${select && 'bg-green-200'}`}> */}
         <Image
           className="object-cover scale-75"
