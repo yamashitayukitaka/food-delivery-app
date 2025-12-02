@@ -24,3 +24,31 @@ export interface Restaurant {
   primaryType?: string,
   photoUrl: any,
 }
+
+export interface GooglePlacesAutoCompleteResponse {
+  suggestions?: PlacesAutoCompleteResult[];
+}
+
+export interface PlacesAutoCompleteResult {
+  placePrediction?: {
+    place?: string,
+    placeId?: string,
+    structuredFormat?: {
+      mainText?: {
+        text?: string,
+      }
+    }
+  },
+  queryPrediction?: {
+    text?: {
+      text?: string,
+    }
+  }
+}
+
+
+export interface RestaurantSuggestion {
+  type: string,
+  placeId: string,
+  placeName: string,
+}

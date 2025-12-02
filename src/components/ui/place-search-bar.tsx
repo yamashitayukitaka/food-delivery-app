@@ -7,6 +7,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
+import { RestaurantSuggestion } from "@/types";
 
 import { useEffect, useState } from "react"
 import { useDebouncedCallback } from 'use-debounce';
@@ -15,8 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default function PlaceSearchBar() {
   const [open, setOpen] = useState(false);
-  const [inputText, setInputText] = useState<string>('')
-  const [sessionToken, setSessionToken] = useState<string>(uuidv4());
+  const [inputText, setInputText] = useState('')
+  const [sessionToken, setSessionToken] = useState(uuidv4());
+  const [suggestions, setSuggestions] = useState<RestaurantSuggestion[]>([]);
   //  uuidv4()で任意の毎回異なるランダムな文字列が取得できる（import { v4 as uuidv4 } from 'uuidが必要)
   //✅検証ツール-->component--->PlaceSearchBarで検索で上記3つのstateの状態を確認できる
 
@@ -38,13 +40,12 @@ export default function PlaceSearchBar() {
     // ようにする
     console.log(input)
     try {
-      const response = await fetch(`api/restaurant/autocomplete?input=${input}&sessionToken=${sessionToken}`, {
+      const response = await fetch(`/api/restaurant/autocomplete?input=${input}&sessionToken=${sessionToken}`, {
         // クエリパラメーターを2つ使うときは&で繋げる
-        method: "GET",
+        // method: "GET",
         // headers: {
         //   "Content-Type": "application/json",
-        // },
-        // body: JSON.stringify({ sessionToken }),
+        // }
       });
 
 
@@ -52,8 +53,9 @@ export default function PlaceSearchBar() {
       //   throw new Error(`HTTP error! Status: ${response.status}`);
       // }
 
-      // const data = await response.json();
-      // console.log(data); // データ使用
+      const data: RestaurantSuggestion[] = await response.json();
+      console.log('suggestion_data', data); // データ使用
+      setSuggestions(data)
     } catch (error) {
       console.error('Error:', error);
     }
@@ -70,14 +72,13 @@ export default function PlaceSearchBar() {
       // inputText.trim() === ''とほぼ同意
       // 「入力が空文字、または空白のみ」の場合に閉じる
       setOpen(false);
-    } else {
-      setOpen(true); // 入力がある場合は開く
+      return;
     }
+    setOpen(true); // 入力がある場合は開く
     // ✅inputTextが更新されたあとに実行されるべき処理なので
     // setOpen(true)はinputTextを引数にとるuseEffect内で実行させる
 
-    fetchSuggestions(inputText)
-
+    fetchSuggestions(inputText);
 
   }, [inputText])
   // ✅イベントハンドラ内でfetchを呼び出すのではなく確実に 
@@ -136,14 +137,21 @@ export default function PlaceSearchBar() {
 
       {open && (
         <div className="relative">
-          <CommandList className="absolute bg-background w-full shadow-md rounded-lg">
-            {/* 上記はclassNameというprops名でtailwindCSSのclass名を渡している。文字列なので{}をつかう必要が無い*/}
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandItem>Calendar</CommandItem>
-            <CommandItem>Search Emoji</CommandItem>
-            <CommandItem>Calculator</CommandItem>
-            <CommandSeparator />
-          </CommandList>
+          <div className="relative">
+            <CommandList className="absolute bg-background w-full shadow-md rounded-lg">
+              {/* 上記はclassNameというprops名でtailwindCSSのclass名を渡している。文字列なので{}をつかう必要が無い*/}
+              <CommandEmpty>No results found.</CommandEmpty>
+              {suggestions.map((suggestion, index) => (
+                <CommandItem
+                  key={suggestion.placeId ?? index}
+                  value={suggestion.placeName}
+                >
+                  <p>{suggestion.placeName}</p>
+                </CommandItem>
+              ))}
+              <CommandSeparator />
+            </CommandList>
+          </div>
         </div>
       )
         // {open && (...)} の形を使う場合、丸括弧 () は 必須ではない です。ただし、複数行の JSX を書くときは推奨される というだけです。
@@ -153,7 +161,6 @@ export default function PlaceSearchBar() {
       }
     </Command>
   )
-
 }
 
 

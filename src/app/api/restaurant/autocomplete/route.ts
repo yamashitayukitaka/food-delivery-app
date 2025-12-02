@@ -1,4 +1,5 @@
 
+import { GooglePlacesAutoCompleteResponse, RestaurantSuggestion } from '@/types';
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -86,15 +87,49 @@ export async function GET(request: NextRequest) {
       // JavaScriptのオブジェクトに変換してそのJavaScriptのオブジェクトを返す。
       // ★ok:falseの場合はbody があれば、response.json()でエラーメッセージなどの内容が取得できる
       console.error(errorData);
-      return NextResponse.json({ error: `NearbySearchリクエスト失敗:${response.status}` });
+      return NextResponse.json({ error: `Autocompleteリクエスト失敗:${response.status}` });
 
-      // ✅errorというキー名で値に`NearbySearchリクエスト失敗:${response.status}`をもつオブジェクトを返す
+      // ✅errorというキー名で値に`Autocompleteリクエスト失敗:${response.status}`をもつオブジェクトを返す
     }
 
-    const data = await response.json()
-    console.log(data, JSON.stringify(data, null, 2))
+    const data: GooglePlacesAutoCompleteResponse = await response.json()
+    const suggestions = data.suggestions ?? []
+    const results = suggestions.map((suggestion) => {
+      if (
+        suggestion.placePrediction &&
+        suggestion.placePrediction.placeId &&
+        suggestion.placePrediction.structuredFormat?.mainText?.text) {
+        // ✅placeIdとplaceNameが取得できなかった場合、は何表示しないようにするために
+        // 条件式に&& suggestion?.placePrediction?.placeId && suggestion?.placePrediction?.structuredFormat?.mainText?.text
+        // を追加して取得できたときにのみ実行するようにする。
+        return {
+          type: 'placePrediction',
+          placeId: suggestion.placePrediction.placeId,
+          placeName: suggestion.placePrediction.structuredFormat.mainText?.text,
+        }
+      } else if (
+        suggestion.queryPrediction &&
+        suggestion.queryPrediction.text?.text) {
+        return {
+          type: 'queryPrediction',
+          placeName: suggestion.queryPrediction.text?.text,
+        }
+        // ✅命名関数を呼び出す場合にreturnがないと呼び出し元へ返す値がundefinedになるのと同様に、
+        //  変数に値を格納する場合returnを付けないと、変数に格納した値がundefinedになる
+        //  そのためreturnをつける
+      }
+    }).filter((suggestion): suggestion is RestaurantSuggestion => (suggestion !== undefined))
+    // [配列].filter((配列の各値を受け取る)=>条件式)
+    // で条件に当てはまる値の配列を返す
+    // ★map関数は配列を返す
 
-    return NextResponse.json('sucsess')
+
+    // ✅ifにもelse ifにも当てはまらない場合はundefinedが返ってしまうので
+    // filterでundefinedを除外する
+
+    // console.log('results', results)
+    console.log(data, JSON.stringify(data, null, 2))
+    return NextResponse.json(results)
 
   } catch (error) {
     return { error: '予期せぬエラーが発生しました' }

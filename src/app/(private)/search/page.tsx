@@ -1,4 +1,3 @@
-
 import { fetchCategoryRestaurants } from "@/lib/restaurants/api";
 import RestaurantList from "@/components/ui/restaurant-list";
 import Categories from "@/components/ui/categories";
