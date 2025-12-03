@@ -49,6 +49,7 @@ export interface PlacesAutoCompleteResult {
 
 export interface RestaurantSuggestion {
   type: string,
-  placeId: string,
+  placeId?: string,
+  // queryPredictionの場合はplaceIdは存在しないので?を付ける
   placeName: string,
 }

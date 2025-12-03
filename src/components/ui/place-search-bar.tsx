@@ -8,6 +8,8 @@ import {
   CommandSeparator,
 } from "@/components/ui/command"
 import { RestaurantSuggestion } from "@/types";
+import { AlertCircle, LoaderCircle, MapPin, Search } from "lucide-react";
+
 
 import { useEffect, useState } from "react"
 import { useDebouncedCallback } from 'use-debounce';
@@ -21,23 +23,22 @@ export default function PlaceSearchBar() {
   const [suggestions, setSuggestions] = useState<RestaurantSuggestion[]>([]);
   //  uuidv4()で任意の毎回異なるランダムな文字列が取得できる（import { v4 as uuidv4 } from 'uuidが必要)
   //✅検証ツール-->component--->PlaceSearchBarで検索で上記3つのstateの状態を確認できる
-
-  const handleBlur = () => {
-    setOpen(false)
-  }
-
-  const handleFocus = () => {
-    if (inputText) {
-      setOpen(true)
-    }
-  }
-
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
 
   const fetchSuggestions = useDebouncedCallback(async (input: string) => {
     // ✅毎回入力するたび(inputTextが更新される度)呼び出すとAPIの料金は高額になるので
     // useDebouncedCallbackパッケージを使用して、入力してから500ミリ秒後に実行される
     // ようにする
+    // 関数が呼ばれたタイミングでsetErrorMessageを空にする
+    if (!input.trim()) {
+      // input.trim() === ''とほぼ同意
+      // 「入力が空文字、または空白のみ」の場合に閉じる
+      setSuggestions([]);
+      return;
+    }
+    setErrorMessage(null)
     console.log(input)
     try {
       const response = await fetch(`/api/restaurant/autocomplete?input=${input}&sessionToken=${sessionToken}`, {
@@ -48,22 +49,33 @@ export default function PlaceSearchBar() {
         // }
       });
 
-
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! Status: ${response.status}`);
-      // }
+      if (!response.ok) {
+        const errorData = await response.json();
+        setErrorMessage(errorData.error)
+        return;
+      }
 
       const data: RestaurantSuggestion[] = await response.json();
       console.log('suggestion_data', data); // データ使用
       setSuggestions(data)
+
     } catch (error) {
-      console.error('Error:', error);
+      console.error(error);
+      setErrorMessage('予期せぬエラーが発生しました')
     }
     //   ✅この関数は、useEffect内で使用されるので、 catch (error)でエラー内容を取得する必要がある。
     // fetchRamenRestaurants()などのようにはレンダリング実行過程内で行われる関数は
     // Next.jsではerror.tsxが使用されるが、fetchSuggestions()は、useEffectでレンダリング実行後に行われるので
     //   catch (error)でエラー内容を受け取る必要がある
     //   ★onClickなどで呼び出されるfetch関数も、レンダリング後に呼び出されるので、catch (error)でエラー内容を受け取る必要がある
+    finally {
+      setIsLoading(false)
+      // ✅tryブロックにsetIsLoading(false)を書いてしまうと
+      // try文内でエラーが起こった場合に、setIsLoading(false)を実行する前にcatch文に移行し
+      // エラーがおこってもsetIsLoading(false)の状態がつづいてしまうので、
+      // finallyブロックに書いて、エラー時でも成功時でもsetIsLoading(false)が実行されるようにする
+      // ★try文はエラーを感知した時点でcatchブロックに移行するので、感知以降のtry内の後続のコードが実行されない
+    }
   }, 500)
 
 
@@ -71,13 +83,14 @@ export default function PlaceSearchBar() {
     if (!inputText.trim()) {
       // inputText.trim() === ''とほぼ同意
       // 「入力が空文字、または空白のみ」の場合に閉じる
+      setSuggestions([]);
       setOpen(false);
       return;
     }
+    setIsLoading(true)
     setOpen(true); // 入力がある場合は開く
     // ✅inputTextが更新されたあとに実行されるべき処理なので
     // setOpen(true)はinputTextを引数にとるuseEffect内で実行させる
-
     fetchSuggestions(inputText);
 
   }, [inputText])
@@ -86,6 +99,15 @@ export default function PlaceSearchBar() {
   // useEffectで管理する 
   // ※イベントハンドラのタイミングでfetchを呼び出すときは、useEffectで管理するのが基本
 
+  const handleBlur = () => {
+    setOpen(false)
+  }
+
+  const handleFocus = () => {
+    if (inputText) {
+      setOpen(true)
+    }
+  }
 
 
 
@@ -140,13 +162,39 @@ export default function PlaceSearchBar() {
           <div className="relative">
             <CommandList className="absolute bg-background w-full shadow-md rounded-lg">
               {/* 上記はclassNameというprops名でtailwindCSSのclass名を渡している。文字列なので{}をつかう必要が無い*/}
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>
+                <div className="flex items-center justify-center">
+                  {isLoading ? (<LoaderCircle className="animate-spin" />) :
+                    errorMessage ? (
+                      <div>
+                        <AlertCircle />
+                        {errorMessage}
+                      </div>
+                    ) : (
+                      'レストランが見つかりません'
+                    )}
+                  {/* ✅lucide-reactはpropsでcssのクラス名を渡せる。classNameはprops名 */}
+                </div>
+              </CommandEmpty>
               {suggestions.map((suggestion, index) => (
                 <CommandItem
+                  className="p-5"
                   key={suggestion.placeId ?? index}
+                  // ✅?? は 「左が null か undefined なら右を返す」
+
                   value={suggestion.placeName}
+                // ✅ value が空の場合、shadcn/ui(Command) の仕様上、CommandEmpty("No results found.") が表示される。
+                //  useDebouncedCallback による fetch 遅延（500ms）で、入力直後は suggestions がまだ取得されないため
+                //  一時的に No results found が表示されることがある
+
                 >
-                  <p>{suggestion.placeName}</p>
+                  {suggestion.type === 'placePrediction' ?
+                    <Search /> :
+                    <MapPin />
+                  }
+                  <p>
+                    {suggestion.placeName}
+                  </p>
                 </CommandItem>
               ))}
               <CommandSeparator />

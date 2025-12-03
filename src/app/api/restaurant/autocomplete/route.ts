@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const requestBody = {
       includeQueryPredictions: true,
       // 検索予測キーワードを取得
-      input: input,
+      // input: input,
       // const input = searchParams.get('input')を値に指定
       // 取得するデータの件数
       sessionToken: sessionToken,
@@ -87,9 +87,13 @@ export async function GET(request: NextRequest) {
       // JavaScriptのオブジェクトに変換してそのJavaScriptのオブジェクトを返す。
       // ★ok:falseの場合はbody があれば、response.json()でエラーメッセージなどの内容が取得できる
       console.error(errorData);
-      return NextResponse.json({ error: `Autocompleteリクエスト失敗:${response.status}` });
-
+      return NextResponse.json({ error: `Autocompleteリクエスト失敗:${response.status}` }, { status: 500 });
       // ✅errorというキー名で値に`Autocompleteリクエスト失敗:${response.status}`をもつオブジェクトを返す
+      // ✅{ status: 500 }のように明示的statusを示さないとデフォルトでstatusが200になる
+      // 200はok:trueなので returnの受け取り先でエラーを受け取りたいのにok:trueになってしまい。
+      // 受取先でif(!response.ok){}が通らなくなる
+
+      // ★{ status: 500 }のように明示することで、Responseオブジェクト内のstatusが200から更新される
     }
 
     const data: GooglePlacesAutoCompleteResponse = await response.json()
@@ -132,6 +136,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results)
 
   } catch (error) {
-    return { error: '予期せぬエラーが発生しました' }
+    return NextResponse.json({ error: '予期せぬエラーが発生しました' })
   }
 }
