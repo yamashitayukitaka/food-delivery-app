@@ -1,4 +1,4 @@
-
+// ✅return NextResponse.jsonの各々の箇所はそこで後続の処理は終了
 import { GooglePlacesAutoCompleteResponse, RestaurantSuggestion } from '@/types';
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const requestBody = {
       includeQueryPredictions: true,
       // 検索予測キーワードを取得
-      // input: input,
+      input: input,
       // const input = searchParams.get('input')を値に指定
       // 取得するデータの件数
       sessionToken: sessionToken,
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: `Autocompleteリクエスト失敗:${response.status}` }, { status: 500 });
       // ✅errorというキー名で値に`Autocompleteリクエスト失敗:${response.status}`をもつオブジェクトを返す
       // ✅{ status: 500 }のように明示的statusを示さないとデフォルトでstatusが200になる
-      // 200はok:trueなので returnの受け取り先でエラーを受け取りたいのにok:trueになってしまい。
+      // 200はok:trueなので returnの受け取り先でエラーを受け取りたいのにok:trueになってしまい。（200番台は成功を表すステータスコード）
       // 受取先でif(!response.ok){}が通らなくなる
 
       // ★{ status: 500 }のように明示することで、Responseオブジェクト内のstatusが200から更新される

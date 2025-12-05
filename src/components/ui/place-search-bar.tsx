@@ -9,11 +9,12 @@ import {
 } from "@/components/ui/command"
 import { RestaurantSuggestion } from "@/types";
 import { AlertCircle, LoaderCircle, MapPin, Search } from "lucide-react";
-
-
-import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation";
+// ✅next/router は Pages Router 用。next/navigationからインポートしないと正しく動作しない
+import { useEffect, useRef, useState } from "react"
 import { useDebouncedCallback } from 'use-debounce';
 import { v4 as uuidv4 } from 'uuid';
+import { useSearchParams } from "next/navigation";
 
 
 export default function PlaceSearchBar() {
@@ -25,6 +26,9 @@ export default function PlaceSearchBar() {
   //✅検証ツール-->component--->PlaceSearchBarで検索で上記3つのstateの状態を確認できる
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const clickedOnItem = useRef(false);
+  const router = useRouter()
+  const searchParams = useSearchParams();
 
 
   const fetchSuggestions = useDebouncedCallback(async (input: string) => {
@@ -100,6 +104,10 @@ export default function PlaceSearchBar() {
   // ※イベントハンドラのタイミングでfetchを呼び出すときは、useEffectで管理するのが基本
 
   const handleBlur = () => {
+    if (clickedOnItem.current) {
+      clickedOnItem.current = false
+      return;
+    }
     setOpen(false)
   }
 
@@ -109,10 +117,32 @@ export default function PlaceSearchBar() {
     }
   }
 
+  const handleSelectSuggestion = (suggestion: RestaurantSuggestion) => {
+    console.log('suggestion', suggestion)
+    if (suggestion.type === 'placePrediction') {
+      router.push(`/restaurant/${suggestion.placeId}?sessionToken=${sessionToken}`)
+    }
+    else {
+      router.push(`/search?restaurant=${suggestion.placeName}`)
+    }
+    setOpen(false)
+  }
+
+  const handleOnKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    console.log(e)
+    if (!inputText.trim()) return;
+    if (e.key === "Enter") {
+      // ✅e.keyは値にイベント発火時に押したキーボードのキー名を取る
+      // ✅onKeyDownは任意のボタンを押したタイミングで毎回発火する 
+      // そのうちEnterを押した場合にのみroute.pushが発火する
+      router.push(`/search?restaurant=${inputText}`)
+    }
+  }
 
 
   return (
-    <Command className="overflow-visible bg-muted" shouldFilter={false}>
+    <Command onKeyDown={handleOnKeyDown} className="overflow-visible bg-muted" shouldFilter={false}>
+      {/* ✅onKeyDownは任意のボタンを押したタイミングで毎回発火する */}
       <CommandInput placeholder="Type a command or search..."
         value={inputText}
         onValueChange={
@@ -166,9 +196,8 @@ export default function PlaceSearchBar() {
                 <div className="flex items-center justify-center">
                   {isLoading ? (<LoaderCircle className="animate-spin" />) :
                     errorMessage ? (
-                      <div>
-                        <AlertCircle />
-                        {errorMessage}
+                      <div className="flex items-center text-destructive gap-2">
+                        <AlertCircle />{errorMessage}
                       </div>
                     ) : (
                       'レストランが見つかりません'
@@ -183,10 +212,13 @@ export default function PlaceSearchBar() {
                   // ✅?? は 「左が null か undefined なら右を返す」
 
                   value={suggestion.placeName}
-                // ✅ value が空の場合、shadcn/ui(Command) の仕様上、CommandEmpty("No results found.") が表示される。
-                //  useDebouncedCallback による fetch 遅延（500ms）で、入力直後は suggestions がまだ取得されないため
-                //  一時的に No results found が表示されることがある
-
+                  // ✅ value が空の場合、shadcn/ui(Command) の仕様上、CommandEmpty("No results found.") が表示される。
+                  //  useDebouncedCallback による fetch 遅延（500ms）で、入力直後は suggestions がまだ取得されないため
+                  //  一時的に No results found が表示されることがある
+                  onSelect={() => handleSelectSuggestion(suggestion)}
+                  // handleSelectSuggestionが引数をとるので、onSelect={() => handleSelectSuggestion(suggestion)}のようにかく
+                  // onSelect={handleSelectSuggestion}はだめ
+                  onMouseDown={() => clickedOnItem.current = true}
                 >
                   {suggestion.type === 'placePrediction' ?
                     <Search /> :
