@@ -121,6 +121,7 @@ export default function PlaceSearchBar() {
     console.log('suggestion', suggestion)
     if (suggestion.type === 'placePrediction') {
       router.push(`/restaurant/${suggestion.placeId}?sessionToken=${sessionToken}`)
+      setSessionToken(uuidv4());
     }
     else {
       router.push(`/search?restaurant=${suggestion.placeName}`)
@@ -136,6 +137,7 @@ export default function PlaceSearchBar() {
       // ✅onKeyDownは任意のボタンを押したタイミングで毎回発火する 
       // そのうちEnterを押した場合にのみroute.pushが発火する
       router.push(`/search?restaurant=${inputText}`)
+      setOpen(false)
     }
   }
 

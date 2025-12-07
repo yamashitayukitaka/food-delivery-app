@@ -1,6 +1,8 @@
-import { fetchCategoryRestaurants } from "@/lib/restaurants/api";
+import { fetchCategoryRestaurants, fetchRestaurantsByKeyword } from "@/lib/restaurants/api";
 import RestaurantList from "@/components/ui/restaurant-list";
 import Categories from "@/components/ui/categories";
+import { redirect } from "next/navigation";
+
 
 
 
@@ -9,12 +11,16 @@ export default async function SearchPage({
   // 分割代入の対象がひとつであっても
   // “通常は末尾に,を付ける”
 }: {
-  searchParams: Promise<{ category: string }>;
+  searchParams: Promise<{ category?: string, restaurant?: string }>;
   // ✅Next15ではsearchParamsは非同期で提供されるので型定義にPromiseを定義する
+  // ✅categoryかrestaurantのどちらかしか取得できないので
+  // Tsの型定義にオプショナルプロパティを付ける
 }) {
 
 
-  const { category } = await searchParams
+  const { category, restaurant } = await searchParams
+  console.log(restaurant)
+
 
   if (category) {
     const { data: categoryRestaurants, error: fetchError } = await fetchCategoryRestaurants(category);
@@ -38,5 +44,33 @@ export default async function SearchPage({
         )}
       </>
     );
+  } else if (restaurant) {
+    const { data: restaurants, error: fetchError } = await fetchRestaurantsByKeyword(restaurant);
+    console.log('text_search_results', restaurants)
+
+    return (
+      <>
+        <div className="mb-4">
+          <Categories />
+        </div>
+        {!restaurants ? (
+          <p className="text-destructive">{fetchError}</p>
+        ) : restaurants.length > 0 ? (
+          <>
+            <div className="mb-4">
+              {restaurant}の検索結果は{restaurants?.length}件です
+            </div>
+            <RestaurantList restaurants={restaurants} />
+          </>
+        ) : (
+          <p>
+            <strong>{restaurant}</strong>に一致するレストランが見つかりません
+          </p>
+        )}
+      </>
+    );
+  } else {
+    redirect(('/'))
+    // urlのクエリパラメータを削除した場合はホームへリダイレクトさせる
   }
 }
