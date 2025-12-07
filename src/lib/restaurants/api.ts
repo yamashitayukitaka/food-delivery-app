@@ -257,7 +257,6 @@ export async function fetchCategoryRestaurants(category: string) {
   };
   const requestBody = {
     includedPrimaryTypes: [category],
-    // primaryTypeがramen_restaurantの箇所のみを取得する
     maxResultCount: 10,
     // 取得するデータの件数
     locationRestriction: {
@@ -342,6 +341,69 @@ export async function fetchCategoryRestaurants(category: string) {
   return { data: CategoryRestaurants }
   // ✅dataというキー名で値にCategoryRestaurantsの中身をもつオブジェクトを返す
   // { data: CategoryRestaurants }はCategoryRestaurantsの中身を値をもつオブジェクトを示す
+}
+
+
+// キーワード検索
+export async function fetchRestaurantsByKeyword(query: string) {
+  const url = "https://places.googleapis.com/v1/places:searchText";
+  // ✅キーワード検索の場合は、エンドポイントが変わるので注意
+  const apiKey = process.env.GOOGLE_API_KEY!;
+  const header = {
+    "Content-Type": "application/json",
+    // ✅bodyがJSON形式であることを伝える
+    "X-Goog-Api-Key": apiKey,
+    "X-Goog-FieldMask": "places.id,places.displayName,places.primaryType,places.photos",
+  };
+  const requestBody = {
+    textQuery: query,
+    // primaryTypeがramen_restaurantの箇所のみを取得する
+    pageSize: 10,
+    // 取得するデータの件数
+    // ✅キーワード検索ではmaxResultCountは非推奨なので、pageSizeを使う（公式ドキュメントより）
+    locationBias: {
+      // ✅キーワード検索の場合locationRestrictionを使用するとなぜか
+      // エラーがでたので locationBiasを使用する
+      // 取得するデータの地点
+      circle: {
+        center: {
+          latitude: 35.6669248,//渋谷
+          // 緯度
+          longitude: 139.6514163,//渋谷
+          // 経度
+        },
+        radius: 1000.0
+        // 半径500メートル
+      }
+    },
+    languageCode: "ja",
+    // 日本語でデータを取得する
+    rankPreference: "DISTANCE",
+  }
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+    headers: header,
+    next: { revalidate: 86400 }
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    console.error(errorData)
+    return { error: `TextSearchリクエスト失敗:${response.status}` }
+  }
+
+  const data: GooglePlacesSearchApiResponse = await response.json();
+  console.log(data)
+
+  if (!data.places) {
+    return { data: [] }
+  }
+
+  const textSearchPlaces = data.places
+
+  const restaurants = await transformPlaceResults(textSearchPlaces)
+  return { data: restaurants }
 }
 
 
