@@ -1,4 +1,4 @@
-import { GooglePlacesSearchApiResponse, Restaurant } from "@/types";
+import { GooglePlacesAutoDetailsApiResponse, GooglePlacesSearchApiResponse, placeDetailsAll, Restaurant } from "@/types";
 import { transformPlaceResults } from "./utils";
 
 // 近くのレストランを取得
@@ -407,7 +407,6 @@ export async function fetchRestaurantsByKeyword(query: string) {
 }
 
 
-
 export async function getPhotoUrl(name: string, maxWidth: number = 400): Promise<string> {
   // 'use cache'を使用する場合は、非同期関数にする必要があるのでasyncを付与する
   // 'use cache'
@@ -418,4 +417,75 @@ export async function getPhotoUrl(name: string, maxWidth: number = 400): Promise
   return url;
 }
 
+
+export async function getPlaceDetails(placeId: string, fields: string[], sessionToken?: string) {
+  // 　sessionToken?: string は「引数につくオプショナルプロパティ」であり、
+  //  TypeScript では “オブジェクトのキー” につけるものと まったく同じ意味で使える
+  const fieldsParam = fields.join(',')
+  // ✅joinメソッドは、配列の各要素を指定した文字列でつなげて1つの文字列を返します。
+  // X-Goog-FieldMaskは、,区切りの文字列で指定するのでこのような処理をする
+  const apiKey = 'process.env.GOOGLE_API_KEY!';
+  let url: string;
+  // 変数宣言にTs型定義
+
+  if (sessionToken) {
+    url = `https://places.googleapis.com/v1/places/${placeId}?sessionToken=${sessionToken}&languageCode=ja`;
+  } else {
+    url = `https://places.googleapis.com/v1/places/${placeId}?languageCode=ja`;
+  }
+
+  const header = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": apiKey,
+    "X-Goog-FieldMask": fieldsParam,
+  };
+
+  //  const requestBody = {
+  //   languageCode: 'ja',
+  // }
+  // ✅GETの場合bodyを指定できないので、エンドポイントURLに記述する
+
+
+  const response = await fetch(url, {
+    method: 'GET',
+    // GETの明記は省略可能
+    // body: JSON.stringify(requestBody),
+    // ✅GETの場合bodyを指定できないので、エンドポイントURLに記述する
+    headers: header,
+    next: { revalidate: 86400 }
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    console.error(errorData)
+    return { error: `placeDetrailsリクエスト失敗:${response.status}` }
+  }
+
+  const data: GooglePlacesAutoDetailsApiResponse = await response.json();
+  console.log(data)
+
+  const results: placeDetailsAll = {}
+
+  if (fields.includes('location') && data.location) {
+    results.location = data.location
+    // ✅空のオブジェクトに、挿入する
+    // 例）
+    // results = {
+    //   location:{
+
+    //   }
+    // }
+    // に
+    // results = {
+    //   location:{
+    //  　 latitude: 35.6710403,
+    // 　　longitude: 139.7345469
+    //   }
+    // }
+    // のように挿入する
+  }
+
+
+  return { data: results }
+}
 

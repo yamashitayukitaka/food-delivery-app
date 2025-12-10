@@ -2,6 +2,10 @@ import Link from 'next/link'
 import React from 'react'
 import MenuSheet from "@/components/ui/menu-sheet";
 import PlaceSearchBar from './place-search-bar';
+import AddressMoadal from './address-modal';
+
+
+
 const Header = () => {
   return (
     <header className="bg-background h-16 fixed top-0 left-0 w-full z-50">
@@ -10,7 +14,8 @@ const Header = () => {
         <div className="font-bold">
           <Link href="/">Delivery APP</Link>
         </div>
-        <div>住所を選択</div>
+        <AddressMoadal />
+
         <div className="flex-1">
           <PlaceSearchBar />
         </div>
