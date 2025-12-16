@@ -424,7 +424,15 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   const fieldsParam = fields.join(',')
   // ✅joinメソッドは、配列の各要素を指定した文字列でつなげて1つの文字列を返します。
   // X-Goog-FieldMaskは、,区切りの文字列で指定するのでこのような処理をする
-  const apiKey = 'process.env.GOOGLE_API_KEY!';
+
+
+  const apiKey = process.env.GOOGLE_API_KEY!;
+  // throw new Error('getDetailsエラー')
+  // ✅最下位レイヤーからエラーを投げてるが次点上位レイヤーである、selectSuggestionAction関数にはtry catch文がないため
+  // try catch文がある最上位レイヤーのAddressMoadal関数のcatchで受け取る
+
+
+
   let url: string;
   // 変数宣言にTs型定義
 
@@ -487,5 +495,6 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
 
 
   return { data: results }
+
 }
 
