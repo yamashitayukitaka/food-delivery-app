@@ -21,6 +21,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { AddressSuggestion } from "@/types";
 import { AlertCircle, LoaderCircle, MapPin } from "lucide-react";
 import { selectSuggestionAction } from "@/app/(private)/actions/AddressActions";
+import useSWR from "swr";
+import { Address } from "@/types";
+
 
 
 export default function AddressMoadal() {
@@ -106,6 +109,36 @@ export default function AddressMoadal() {
   // useEffectで管理する 
   // ※イベントハンドラのタイミングでfetchを呼び出すときは、useEffectで管理するのが基本
 
+  const fetcher = (url: string) => fetch(url).then(res => res.json())
+  // ✅urlには/api/addressが入る
+  //✅fetcher関数はuseSWR(/api/address, fetcher)が実行合図となる
+
+  // ----------------------------------------
+  // const { data, error, isLoading: loading }: { data: AddressResponse | null; error: any; isLoading: boolean } = useSWR(`/api/address`, fetcher)
+  const { data, error, isLoading: loading, mutate } = useSWR<AddressResponse>(`/api/address`, fetcher)
+  // ✅上下のコードの型定義はどちらも動作はするが、、ジェネリティクスを使う場合はerror: any; isLoading: booleanの型定義は省略できる
+  // 下のコードの型定義が推奨される。返り値全体を手書きで型定義する方法は冗長で非推奨
+  // ----------------------------------------
+
+  console.log('swr_data', data)
+
+  interface AddressResponse {
+    addressList: Address[];
+    selectedAddress: Address | null;
+  }
+
+  // ✅成功時データdata、失敗時エラーerror、読み込み中の状態管理尾isLoading
+  // ✅method を書いていない＝自動的に GETメソッドになる
+  // useSWRはデフォルトではGET
+
+  // ✅useSWRを使用するときは、ルートハンドラーズを使用する。
+  // サーバーアクションズはURLを持たないから、fetchできない
+
+  console.log('swr_data', data)
+
+  if (error) return <div>failed to load</div>
+  if (loading) return <div>loading...</div>
+
   const handleSelectSuggestion = async (suggestion: AddressSuggestion) => {
     //✅サーバーアクションズ呼び出し
     // クライアントコンポーネント内で Supabase の CRUD を書くと、
@@ -116,6 +149,11 @@ export default function AddressMoadal() {
     try {
       await selectSuggestionAction(suggestion, sessionToken);
       setSessionToken(uuidv4());
+      setInputText('');
+      mutate();
+      // ✅mutate()を実行することで、useSWRで取得したデータが最新化される
+      // mutate()を実行しないと、保存した住所がAddressModal内の
+      // 保存済み住所リストに反映されない
     } catch (error) {
       console.error(error)
       alert('予期せぬエラーが発生しました')
@@ -132,9 +170,16 @@ export default function AddressMoadal() {
     }
   }
 
+
+
   return (
     <Dialog>
-      <DialogTrigger><div>住所を選択</div></DialogTrigger>
+      <DialogTrigger>
+        {data?.selectedAddress ?
+          data.selectedAddress.name
+          : '住所を選択'
+        }
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>住所</DialogTitle>
@@ -178,6 +223,15 @@ export default function AddressMoadal() {
             ) : (
               <>
                 <h3 className="font-black text-lg mb-2">保存済みの住所</h3>
+                {data?.addressList.map((address) => (
+                  <CommandItem key={address.id} className="p-5">
+                    <MapPin />
+                    <div>
+                      <p className="font-bold">{address.name}</p>
+                      <p className="test-muted-foreground">{address.address_text}</p>
+                    </div>
+                  </CommandItem>
+                ))}
               </>
             )}
           </CommandList>
