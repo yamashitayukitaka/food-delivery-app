@@ -19,14 +19,20 @@ import { useEffect, useState } from "react"
 import { useDebouncedCallback } from 'use-debounce';
 import { v4 as uuidv4 } from 'uuid';
 import { AddressSuggestion } from "@/types";
-import { AlertCircle, LoaderCircle, MapPin } from "lucide-react";
-import { selectSuggestionAction } from "@/app/(private)/actions/AddressActions";
+import { AlertCircle, LoaderCircle, MapPin, Trash, Trash2 } from "lucide-react";
+import { deleteAddressAction, selectAddressAction, selectSuggestionAction } from "@/app/(private)/actions/AddressActions";
 import useSWR from "swr";
 import { Address } from "@/types";
+import { cn } from "@/lib/utils";
+import { Button } from "./button";
+import { useRouter } from "next/navigation";
 
+interface AddressResponse {
+  addressList: Address[];
+  selectedAddress: Address | null;
+}
 
-
-export default function AddressMoadal() {
+export default function AddressModal() {
   const [inputText, setInputText] = useState('')
   const [sessionToken, setSessionToken] = useState(uuidv4());
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -34,6 +40,7 @@ export default function AddressMoadal() {
   //✅検証ツール-->component--->PlaceSearchBarで検索で上記3つのstateの状態を確認できる
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter();
 
 
   const fetchSuggestions = useDebouncedCallback(async (input: string) => {
@@ -109,23 +116,36 @@ export default function AddressMoadal() {
   // useEffectで管理する 
   // ※イベントハンドラのタイミングでfetchを呼び出すときは、useEffectで管理するのが基本
 
-  const fetcher = (url: string) => fetch(url).then(res => res.json())
-  // ✅urlには/api/addressが入る
-  //✅fetcher関数はuseSWR(/api/address, fetcher)が実行合図となる
+  const fetcher = async (url: string) => {
+    //✅urlには/api/addressが入る
+    //✅fetcher関数はuseSWR(/api/address, fetcher)が実行合図となる
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error);
+      // ✅throw new Errorを使うことで、useSWRのerrorにエラー内容が渡される
+      // デフォルトではルートハンドラーズからsupabase経由でのエラー内容はdata内に入るので
+      // useSWRのerrorで受け取れないのでthrow new Errorでエラー内容をuseSWRのerrorに渡した
+    }
+    const data = await response.json();
+    return data;
+    // ✅成功時はdataが返されuseSWRのdataに渡される 
+  }
 
   // ----------------------------------------
   // const { data, error, isLoading: loading }: { data: AddressResponse | null; error: any; isLoading: boolean } = useSWR(`/api/address`, fetcher)
   const { data, error, isLoading: loading, mutate } = useSWR<AddressResponse>(`/api/address`, fetcher)
+  // ✅このerrorはルートハンドラーズにアクセスできなかった場合の fetch 自体の失敗内容
+  // ＋ fetcher 内で throw された Error がすべて入る
+  // デフォルトではルートハンドラーズからsupabase経由でのエラー内容はdata内に入る
+
+
   // ✅上下のコードの型定義はどちらも動作はするが、、ジェネリティクスを使う場合はerror: any; isLoading: booleanの型定義は省略できる
   // 下のコードの型定義が推奨される。返り値全体を手書きで型定義する方法は冗長で非推奨
   // ----------------------------------------
 
-  console.log('swr_data', data)
 
-  interface AddressResponse {
-    addressList: Address[];
-    selectedAddress: Address | null;
-  }
+
 
   // ✅成功時データdata、失敗時エラーerror、読み込み中の状態管理尾isLoading
   // ✅method を書いていない＝自動的に GETメソッドになる
@@ -136,7 +156,10 @@ export default function AddressMoadal() {
 
   console.log('swr_data', data)
 
-  if (error) return <div>failed to load</div>
+  if (error) {
+    console.error('エラー', error);
+    return <div>{error.message}</div>
+  }
   if (loading) return <div>loading...</div>
 
   const handleSelectSuggestion = async (suggestion: AddressSuggestion) => {
@@ -154,6 +177,7 @@ export default function AddressMoadal() {
       // ✅mutate()を実行することで、useSWRで取得したデータが最新化される
       // mutate()を実行しないと、保存した住所がAddressModal内の
       // 保存済み住所リストに反映されない
+      router.refresh();
     } catch (error) {
       console.error(error)
       alert('予期せぬエラーが発生しました')
@@ -167,6 +191,64 @@ export default function AddressMoadal() {
       // fetchのAPI接続エラー時の失敗内容か、
       // throw new Errorの値を受け取る 
       // throw new ErrorはfetchのAPI接続の失敗成功かは関係ない
+    }
+  }
+
+  const handleSelectAddress = async (address: Address) => {
+    console.log('address', address)
+    try {
+      await selectAddressAction(address.id);
+      mutate();
+      // mutate()を実行しないと、選択した住所がAddressModal内に反映されない
+      // ✅<DialogTrigger>
+      //   {data?.selectedAddress ?
+      //     data.selectedAddress.name
+      //     : '住所を選択'
+      //   }
+      // </DialogTrigger>
+      // が更新されるのはmutateの影響
+      router.refresh();
+      // router.refresh() を呼び出した時点で表示中のルートを起点に、
+      // そのルートに属するすべてのサーバーコンポーネントが再評価される
+      // （router.refresh() を記述しているコンポーネント自身も含む）
+      //
+      // そのため、ルートURLのサーバーコンポーネント（Home）も必ず再評価され、
+      // Home 内で呼ばれている fetchLocation() が再実行される
+      // → 選択後の緯度・経度が取得される
+    } catch (error) {
+      console.error(error)
+      alert('予期せぬエラーが発生しました')
+    }
+  }
+
+  const handleDeleteAddress = async (addressId: number) => {
+    console.log('addressId', addressId)
+    const ok = window.confirm('住所を削除しますか？')
+    // ✅window.confirm()はブラウザ組み込みの関数で
+    // 確認ダイアログを表示し、ユーザーが「OK」をクリックした場合はtrue、
+    // 「キャンセル」をクリックした場合はfalseを返す
+    if (!ok) return;
+    try {
+      const selectedAddressId = data?.selectedAddress?.id;
+      await deleteAddressAction(addressId);
+      // mutate();
+      // mutate()を実行しないと、削除した住所がAddressModal内に反映されない
+      // ✅<DialogTrigger>
+      //   {data?.selectedAddress ?
+      //     data.selectedAddress.name
+      //     : '住所を選択'
+      //   }
+      // </DialogTrigger>
+      // が更新されるのはmutateの影響
+      mutate();
+      if (selectedAddressId === addressId) {
+        // ✅削除した住所が選択中の住所だった場合は
+        // HomeコンポーネントでfetchLocation()が再実行されないようにするために  
+        router.refresh();
+      }
+    } catch (error) {
+      console.error(error)
+      alert('予期せぬエラーが発生しました')
     }
   }
 
@@ -223,13 +305,27 @@ export default function AddressMoadal() {
             ) : (
               <>
                 <h3 className="font-black text-lg mb-2">保存済みの住所</h3>
+
                 {data?.addressList.map((address) => (
-                  <CommandItem key={address.id} className="p-5">
-                    <MapPin />
+                  <CommandItem
+                    onSelect={() => handleSelectAddress(address)}
+                    key={address.id} className={cn("p-5 justify-between items-center", data.selectedAddress?.id === address.id && "bg-red-500")}>
+                    {/* cn('デフォルトのクラス名', 条件と追加するクラス名) */}
                     <div>
                       <p className="font-bold">{address.name}</p>
                       <p className="test-muted-foreground">{address.address_text}</p>
                     </div>
+                    <Button size="icon" variant={'ghost'} onClick={(e) => {
+                      handleDeleteAddress(address.id);
+                      e.stopPropagation();
+                      // 子要素であるボタンをクリックすると親要素である
+                      // CommandItemのonSelectも発火してしまうので、e.stopPropagationで防ぐ
+                    }}>
+                      {/* 引数を指定した場合は()=>{}で囲む必要がある */}
+                      {/* shade cn ui */}
+                      <Trash2 />
+                      {/* lucide react */}
+                    </Button>
                   </CommandItem>
                 ))}
               </>

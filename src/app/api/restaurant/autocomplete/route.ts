@@ -11,6 +11,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const input = searchParams.get('input')
   const sessionToken = searchParams.get('sessionToken')
+  const lat = searchParams.get('lat')
+  const lng = searchParams.get('lng')
   // ✅公式ドキュメントより、ルートハンドラーズでURLのクエリパラメータを取得するコード
   // ✅searchParams.get('キー名') でクエリパラメーターの値を取得できる
 
@@ -51,8 +53,8 @@ export async function GET(request: NextRequest) {
         // 指定されたエリア外の結果を含め、指定された位置周辺の結果が返される可能性があり
         circle: {
           center: {
-            latitude: 35.6669248,
-            longitude: 139.6514163,
+            latitude: lat,
+            longitude: lng,
           },
           radius: 1000.0,
         },

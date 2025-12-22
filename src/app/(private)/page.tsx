@@ -20,15 +20,18 @@
 import Section from "@/components/ui/section";
 import CarouselContainer from "@/components/ui/carousel-container";
 import RestaurantCard from "@/components/ui/restaurant-card";
-import { fetchRamenRestaurants } from "@/lib/restaurants/api"
+import { fetchLocation, fetchRamenRestaurants } from "@/lib/restaurants/api"
 import { fetchRestaurants } from "@/lib/restaurants/api"
 import RestaurantList from "@/components/ui/restaurant-list";
 import Categories from "@/components/ui/categories";
 
 
 export default async function Home() {
-  const { data: nearbyRamenRestaurants, error: nearbyRamenRestaurantError } = await fetchRamenRestaurants();
-  const { data: nearbyRestaurants, error: restaurantsError } = await fetchRestaurants();
+  const { lat, lng } = await fetchLocation();
+  console.log('ホームページの緯度経度', { lat, lng });
+
+  const { data: nearbyRamenRestaurants, error: nearbyRamenRestaurantError } = await fetchRamenRestaurants(lat, lng);
+  const { data: nearbyRestaurants, error: restaurantsError } = await fetchRestaurants(lat, lng);
 
   //  fetchRamenRestaurants() は定義側で
   // { data: RamenRestaurants }
@@ -37,6 +40,7 @@ export default async function Home() {
   // を返しているので
   // 分割代入でキー名を変数名することでそれぞれの値を受け取ることができる
   // ✅上記の場合は一旦dataという変数名で値受け取ってから変数名を nearbyRamenRestaurants に変更している
+
 
 
 

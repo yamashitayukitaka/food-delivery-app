@@ -84,3 +84,58 @@ export async function selectSuggestionAction(suggestion: AddressSuggestion, sess
     throw new Error('プロフィールの更新に失敗しました')
   }
 }
+
+
+export async function selectAddressAction(addressId: number) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/login");
+  }
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      selected_address_id: addressId,
+    })
+    .eq("id", user.id);
+
+  if (updateError) {
+    console.error("選択中の住所の更新に失敗しました。", updateError);
+    throw new Error("選択中の住所の更新に失敗しました。");
+  }
+}
+
+
+export async function deleteAddressAction(addressId: number) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/login");
+  }
+
+  const { error: deleteError } = await supabase
+    .from("addresses")
+    .delete()
+    .eq("id", addressId)
+    .eq("user_id", user.id);
+  // ✅誤って他人の住所を削除しないように、user_idも条件に加える
+  // RLSポリシーが有効なので、user_id = auth.uid() の行しか削除できないが
+  // さらに安全策としてuser_idも指定している
+  // 明示しておくことで、コードを見たときに
+  // 「この削除処理は自分の住所データに対してのみ行われる」と分かりやすくなる
+  // だが必ずしも書く必要は無い
+
+  if (deleteError) {
+    console.error("住所の削除に失敗しました。", deleteError);
+    throw new Error("住所の削除に失敗しました。");
+  }
+}

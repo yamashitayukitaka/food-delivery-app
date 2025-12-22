@@ -16,8 +16,13 @@ import { useDebouncedCallback } from 'use-debounce';
 import { v4 as uuidv4 } from 'uuid';
 import { useSearchParams } from "next/navigation";
 
+interface PlaceSearchBarProps {
+  lat: number;
+  lng: number;
+}
 
-export default function PlaceSearchBar() {
+export default function PlaceSearchBar({ lat, lng }: PlaceSearchBarProps) {
+  // ✅propsで受け取るlatとlngの型を明示する
   const [open, setOpen] = useState(false);
   const [inputText, setInputText] = useState('')
   const [sessionToken, setSessionToken] = useState(uuidv4());
@@ -45,7 +50,7 @@ export default function PlaceSearchBar() {
     setErrorMessage(null)
     console.log(input)
     try {
-      const response = await fetch(`/api/restaurant/autocomplete?input=${input}&sessionToken=${sessionToken}`, {
+      const response = await fetch(`/api/restaurant/autocomplete?input=${input}&sessionToken=${sessionToken}&lat=${lat}&lng=${lng}`, {
         // クエリパラメーターを2つ使うときは&で繋げる
         // method: "GET",
         // headers: {
