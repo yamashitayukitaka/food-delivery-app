@@ -1,8 +1,26 @@
-import { GooglePlacesSearchApiResponse, Restaurant } from "@/types";
+// ✅ この処理はサーバーサイドで使用する前提であり、
+// 秘密鍵や server-only API を含むため
+// クライアントコンポーネントから直接実行することはできない。
+//
+// クライアントから実行したい場合は、
+// Server Action として 'use server' を宣言し、
+// Next.js が許可するイベント経路
+//（form action / startTransition など）
+// 経由で呼び出す必要がある。
+//
+// しかし本処理は、Next.js が許可するイベント経由で呼び出す用途ではなく
+// サーバー内で宣言して利用する前提のため、
+// クライアントコンポーネントでは利用できない。
+
+
+
+import { GooglePlacesAutoDetailsApiResponse, GooglePlacesSearchApiResponse, placeDetailsAll, Restaurant } from "@/types";
 import { transformPlaceResults } from "./utils";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
 // 近くのレストランを取得
-export async function fetchRestaurants() {
+export async function fetchRestaurants(lat: number, lng: number) {
   // throw new Error('testエラー');
   // 意図的にエラーを起こさせる
   const url = "https://places.googleapis.com/v1/places:searchNearby";
@@ -43,9 +61,9 @@ export async function fetchRestaurants() {
       // 取得するデータの地点
       circle: {
         center: {
-          latitude: 35.6669248,//渋谷
+          latitude: lat,
           // 緯度
-          longitude: 139.6514163,//渋谷
+          longitude: lng,
           // 経度
         },
         radius: 1000.0
@@ -141,7 +159,7 @@ export async function fetchRestaurants() {
 
 
 // 近くのラーメン店を取得
-export async function fetchRamenRestaurants() {
+export async function fetchRamenRestaurants(lat: number, lng: number) {
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY!;
   // ✅はい、その ! は 「この値は絶対に undefined（または null）にならない」
@@ -162,9 +180,9 @@ export async function fetchRamenRestaurants() {
       // 取得するデータの地点
       circle: {
         center: {
-          latitude: 35.6669248,//渋谷
+          latitude: lat,//渋谷
           // 緯度
-          longitude: 139.6514163,//渋谷
+          longitude: lng,//渋谷
           // 経度
         },
         radius: 1000.0
@@ -243,7 +261,7 @@ export async function fetchRamenRestaurants() {
 
 
 //カテゴリ検索機能
-export async function fetchCategoryRestaurants(category: string) {
+export async function fetchCategoryRestaurants(category: string, lat: number, lng: number) {
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY!;
   // ✅はい、その ! は 「この値は絶対に undefined（または null）にならない」
@@ -263,9 +281,9 @@ export async function fetchCategoryRestaurants(category: string) {
       // 取得するデータの地点
       circle: {
         center: {
-          latitude: 35.6669248,//渋谷
+          latitude: lat,//渋谷
           // 緯度
-          longitude: 139.6514163,//渋谷
+          longitude: lng,//渋谷
           // 経度
         },
         radius: 1000.0
@@ -345,7 +363,7 @@ export async function fetchCategoryRestaurants(category: string) {
 
 
 // キーワード検索
-export async function fetchRestaurantsByKeyword(query: string) {
+export async function fetchRestaurantsByKeyword(query: string, lat: number, lng: number) {
   const url = "https://places.googleapis.com/v1/places:searchText";
   // ✅キーワード検索の場合は、エンドポイントが変わるので注意
   const apiKey = process.env.GOOGLE_API_KEY!;
@@ -367,9 +385,9 @@ export async function fetchRestaurantsByKeyword(query: string) {
       // 取得するデータの地点
       circle: {
         center: {
-          latitude: 35.6669248,//渋谷
+          latitude: lat,//渋谷
           // 緯度
-          longitude: 139.6514163,//渋谷
+          longitude: lng,//渋谷
           // 経度
         },
         radius: 1000.0
@@ -407,7 +425,6 @@ export async function fetchRestaurantsByKeyword(query: string) {
 }
 
 
-
 export async function getPhotoUrl(name: string, maxWidth: number = 400): Promise<string> {
   // 'use cache'を使用する場合は、非同期関数にする必要があるのでasyncを付与する
   // 'use cache'
@@ -417,5 +434,129 @@ export async function getPhotoUrl(name: string, maxWidth: number = 400): Promise
   const url = `https://places.googleapis.com/v1/${name}/media?key=${apiKey}&maxWidthPx=${maxWidth}`;
   return url;
 }
+
+
+export async function getPlaceDetails(placeId: string, fields: string[], sessionToken?: string) {
+  // 　sessionToken?: string は「引数につくオプショナルプロパティ」であり、
+  //  TypeScript では “オブジェクトのキー” につけるものと まったく同じ意味で使える
+  const fieldsParam = fields.join(',')
+  // ✅joinメソッドは、配列の各要素を指定した文字列でつなげて1つの文字列を返します。
+  // X-Goog-FieldMaskは、,区切りの文字列で指定するのでこのような処理をする
+
+
+  const apiKey = process.env.GOOGLE_API_KEY!;
+  // throw new Error('getDetailsエラー')
+  // ✅最下位レイヤーからエラーを投げてるが次点上位レイヤーである、selectSuggestionAction関数にはtry catch文がないため
+  // try catch文がある最上位レイヤーのAddressMoadal関数のcatchで受け取る
+
+
+
+  let url: string;
+  // 変数宣言にTs型定義
+
+  if (sessionToken) {
+    url = `https://places.googleapis.com/v1/places/${placeId}?sessionToken=${sessionToken}&languageCode=ja`;
+  } else {
+    url = `https://places.googleapis.com/v1/places/${placeId}?languageCode=ja`;
+  }
+
+  const header = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": apiKey,
+    "X-Goog-FieldMask": fieldsParam,
+  };
+
+  //  const requestBody = {
+  //   languageCode: 'ja',
+  // }
+  // ✅GETの場合bodyを指定できないので、エンドポイントURLに記述する
+
+
+  const response = await fetch(url, {
+    method: 'GET',
+    // GETの明記は省略可能
+    // body: JSON.stringify(requestBody),
+    // ✅GETの場合bodyを指定できないので、エンドポイントURLに記述する
+    headers: header,
+    next: { revalidate: 86400 }
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    console.error(errorData)
+    return { error: `placeDetrailsリクエスト失敗:${response.status}` }
+  }
+
+  const data: GooglePlacesAutoDetailsApiResponse = await response.json();
+  console.log(data)
+
+  const results: placeDetailsAll = {}
+
+  if (fields.includes('location') && data.location) {
+    results.location = data.location
+    // ✅空のオブジェクトに、挿入する
+    // 例）
+    // results = {
+    //   location:{
+
+    //   }
+    // }
+    // に
+    // results = {
+    //   location:{
+    //  　 latitude: 35.6710403,
+    // 　　longitude: 139.7345469
+    //   }
+    // }
+    // のように挿入する
+  }
+
+
+  return { data: results }
+
+}
+
+
+// 
+export async function fetchLocation() {
+  const DEFAULT_LOCATION = {
+    lat: 35.6669248,
+    lng: 139.6514163,
+  };
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/login");
+  }
+
+  // 選択中の緯度と経度を取得
+  const { data: selectedAddress, error: selectedAddressError } = await supabase
+    .from('profiles')
+    .select(`
+        addresses (
+          latitude,
+          longitude
+        )
+      `)
+    .eq('id', user.id)
+    .single()
+  if (selectedAddressError) {
+    console.error('緯度と経度の取得に失敗しました', selectedAddressError);
+    throw new Error('緯度と経度の取得に失敗しました');
+    // ✅呼び出し元でcatchが無ければ、app routerでは対応するerror.tsxが呼び出される
+  }
+
+  const lat = selectedAddress.addresses?.latitude ?? DEFAULT_LOCATION.lat;
+  const lng = selectedAddress.addresses?.longitude ?? DEFAULT_LOCATION.lng;
+  // ✅??は「null合体演算子」と呼ばれ、左側の値が null または undefined の場合に右側の値を返す演算子です。
+
+  return { lat, lng };
+};
 
 

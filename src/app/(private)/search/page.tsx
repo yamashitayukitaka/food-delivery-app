@@ -1,4 +1,4 @@
-import { fetchCategoryRestaurants, fetchRestaurantsByKeyword } from "@/lib/restaurants/api";
+import { fetchCategoryRestaurants, fetchLocation, fetchRestaurantsByKeyword } from "@/lib/restaurants/api";
 import RestaurantList from "@/components/ui/restaurant-list";
 import Categories from "@/components/ui/categories";
 import { redirect } from "next/navigation";
@@ -20,10 +20,11 @@ export default async function SearchPage({
 
   const { category, restaurant } = await searchParams
   console.log(restaurant)
-
+  const { lat, lng } = await fetchLocation();
 
   if (category) {
-    const { data: categoryRestaurants, error: fetchError } = await fetchCategoryRestaurants(category);
+
+    const { data: categoryRestaurants, error: fetchError } = await fetchCategoryRestaurants(category, lat, lng);
     // 受けとったオブジェクト（キーがdata値がcategoryRestaurantsの内容）を分割代入として受け取り キー名をcategoryRestaurantsに変更している
     // 受けとったオブジェクト（キーがerror値が `NearbySearchリクエスト失敗:${response.status}`）を分割代入として受け取り キー名をfetchErrorに変更している
     return (
@@ -45,7 +46,7 @@ export default async function SearchPage({
       </>
     );
   } else if (restaurant) {
-    const { data: restaurants, error: fetchError } = await fetchRestaurantsByKeyword(restaurant);
+    const { data: restaurants, error: fetchError } = await fetchRestaurantsByKeyword(restaurant, lat, lng);
     console.log('text_search_results', restaurants)
 
     return (

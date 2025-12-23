@@ -16,8 +16,13 @@ import { useDebouncedCallback } from 'use-debounce';
 import { v4 as uuidv4 } from 'uuid';
 import { useSearchParams } from "next/navigation";
 
+interface PlaceSearchBarProps {
+  lat: number;
+  lng: number;
+}
 
-export default function PlaceSearchBar() {
+export default function PlaceSearchBar({ lat, lng }: PlaceSearchBarProps) {
+  // ✅propsで受け取るlatとlngの型を明示する
   const [open, setOpen] = useState(false);
   const [inputText, setInputText] = useState('')
   const [sessionToken, setSessionToken] = useState(uuidv4());
@@ -45,7 +50,7 @@ export default function PlaceSearchBar() {
     setErrorMessage(null)
     console.log(input)
     try {
-      const response = await fetch(`/api/restaurant/autocomplete?input=${input}&sessionToken=${sessionToken}`, {
+      const response = await fetch(`/api/restaurant/autocomplete?input=${input}&sessionToken=${sessionToken}&lat=${lat}&lng=${lng}`, {
         // クエリパラメーターを2つ使うときは&で繋げる
         // method: "GET",
         // headers: {
@@ -191,49 +196,47 @@ export default function PlaceSearchBar() {
 
       {open && (
         <div className="relative">
-          <div className="relative">
-            <CommandList className="absolute bg-background w-full shadow-md rounded-lg">
-              {/* 上記はclassNameというprops名でtailwindCSSのclass名を渡している。文字列なので{}をつかう必要が無い*/}
-              <CommandEmpty>
-                <div className="flex items-center justify-center">
-                  {isLoading ? (<LoaderCircle className="animate-spin" />) :
-                    errorMessage ? (
-                      <div className="flex items-center text-destructive gap-2">
-                        <AlertCircle />{errorMessage}
-                      </div>
-                    ) : (
-                      'レストランが見つかりません'
-                    )}
-                  {/* ✅lucide-reactはpropsでcssのクラス名を渡せる。classNameはprops名 */}
-                </div>
-              </CommandEmpty>
-              {suggestions.map((suggestion, index) => (
-                <CommandItem
-                  className="p-5"
-                  key={suggestion.placeId ?? index}
-                  // ✅?? は 「左が null か undefined なら右を返す」
+          <CommandList className="absolute bg-background w-full shadow-md rounded-lg">
+            {/* 上記はclassNameというprops名でtailwindCSSのclass名を渡している。文字列なので{}をつかう必要が無い*/}
+            <CommandEmpty>
+              <div className="flex items-center justify-center">
+                {isLoading ? (<LoaderCircle className="animate-spin" />) :
+                  errorMessage ? (
+                    <div className="flex items-center text-destructive gap-2">
+                      <AlertCircle />{errorMessage}
+                    </div>
+                  ) : (
+                    'レストランが見つかりません'
+                  )}
+                {/* ✅lucide-reactはpropsでcssのクラス名を渡せる。classNameはprops名 */}
+              </div>
+            </CommandEmpty>
+            {suggestions.map((suggestion, index) => (
+              <CommandItem
+                className="p-5"
+                key={suggestion.placeId ?? index}
+                // ✅?? は 「左が null か undefined なら右を返す」
 
-                  value={suggestion.placeName}
-                  // ✅ value が空の場合、shadcn/ui(Command) の仕様上、CommandEmpty("No results found.") が表示される。
-                  //  useDebouncedCallback による fetch 遅延（500ms）で、入力直後は suggestions がまだ取得されないため
-                  //  一時的に No results found が表示されることがある
-                  onSelect={() => handleSelectSuggestion(suggestion)}
-                  // handleSelectSuggestionが引数をとるので、onSelect={() => handleSelectSuggestion(suggestion)}のようにかく
-                  // onSelect={handleSelectSuggestion}はだめ
-                  onMouseDown={() => clickedOnItem.current = true}
-                >
-                  {suggestion.type === 'placePrediction' ?
-                    <Search /> :
-                    <MapPin />
-                  }
-                  <p>
-                    {suggestion.placeName}
-                  </p>
-                </CommandItem>
-              ))}
-              <CommandSeparator />
-            </CommandList>
-          </div>
+                value={suggestion.placeName}
+                // ✅ value が空の場合、shadcn/ui(Command) の仕様上、CommandEmpty("No results found.") が表示される。
+                //  useDebouncedCallback による fetch 遅延（500ms）で、入力直後は suggestions がまだ取得されないため
+                //  一時的に No results found が表示されることがある
+                onSelect={() => handleSelectSuggestion(suggestion)}
+                // handleSelectSuggestionが引数をとるので、onSelect={() => handleSelectSuggestion(suggestion)}のようにかく
+                // onSelect={handleSelectSuggestion}はだめ
+                onMouseDown={() => clickedOnItem.current = true}
+              >
+                {suggestion.type === 'placePrediction' ?
+                  <Search /> :
+                  <MapPin />
+                }
+                <p>
+                  {suggestion.placeName}
+                </p>
+              </CommandItem>
+            ))}
+            <CommandSeparator />
+          </CommandList>
         </div>
       )
         // {open && (...)} の形を使う場合、丸括弧 () は 必須ではない です。ただし、複数行の JSX を書くときは推奨される というだけです。
