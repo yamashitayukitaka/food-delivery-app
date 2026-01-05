@@ -56,6 +56,12 @@ export interface GooglePlacesAutoDetailsApiResponse {
     latitude?: number;
     longitude?: number;
   }
+  displayName?: {
+    text?: string;
+    languageCode?: string;
+  }
+  primaryType?: string;
+  photos?: PlacePhoto[];
 }
 
 export interface placeDetailsAll {
@@ -63,6 +69,9 @@ export interface placeDetailsAll {
     latitude?: number;
     longitude?: number;
   }
+  displayName?: string;
+  primaryType?: string;
+  photoUrl?: string
 }
 
 
@@ -85,4 +94,17 @@ export interface Address {
   address_text: string;
   latitude: number;
   longitude: number;
+}
+
+export interface categoryMenu {
+  categoryName: string;
+  id: string;
+  items: Menu[];
+}
+
+export interface Menu {
+  id: number;
+  name: string;
+  photoUrl: string;
+  price: number;
 }
