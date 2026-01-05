@@ -24,7 +24,7 @@ import { Button } from "./button"
 
 interface SectionProps {
   children: React.ReactNode
-  title: string
+  title?: string
   expandedContent?: React.ReactNode
 }
 // ✅React.ReactNode = React がレンダリング可能な要素全ての型
@@ -48,9 +48,10 @@ export default function Section({ children, title, expandedContent }: SectionPro
     <section>
       <div className="flex items-center justify-between py-3">
         <h2 className="text-2xl font-bold">{title}</h2>
-        <Button onClick={handleChange}>
-          {isExpanded ? "表示を戻す" : "すべて表示"}
-        </Button>
+        {expandedContent && (
+          <Button onClick={handleChange}>
+            {isExpanded ? "表示を戻す" : "すべて表示"}
+          </Button>)}
       </div>
       {isExpanded ? expandedContent : children}
     </section>

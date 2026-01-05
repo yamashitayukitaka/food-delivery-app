@@ -1,6 +1,15 @@
+// ✅ プロジェクト直下の layout.tsx は (private) 配下にも適用される
+// ただし (private)/layout.tsx が存在する場合、
+// その配下では (private)/layout.tsx が内側のレイアウトとして適用される
+// 結果として、(private)/layout.tsx に含まれない部分は
+// プロジェクト直下の layout.tsx の構造がそのまま残る
+
+
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ModalProvider } from "./context/modalContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +36,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ModalProvider>
+          {children}
+        </ModalProvider>
       </body>
     </html>
   );

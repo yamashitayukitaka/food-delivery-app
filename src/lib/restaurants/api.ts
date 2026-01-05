@@ -128,6 +128,12 @@ export async function fetchRestaurants(lat: number, lng: number) {
   console.log(data)
 
   if (!data.places) {
+    // ✅data.places が undefined または nullの場合falsyなのでそれを反転させてtrutyなって実行される
+
+    // data.places が undefined または null → falsy
+    // !data.places → true （反転される）
+    // if の中身 { return { data: [] } } が 実行される
+
     return { data: [] }
   }
 
@@ -455,6 +461,11 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   // 変数宣言にTs型定義
 
   if (sessionToken) {
+    //  restaurant/[restaurantId]/page.tsxでgetPlaceDetailsを呼び出す場合
+    // sessionTokenが存在しない場合引数sessionTokenにundefinedがわたされるので
+    // ここで条件分岐する
+
+
     url = `https://places.googleapis.com/v1/places/${placeId}?sessionToken=${sessionToken}&languageCode=ja`;
   } else {
     url = `https://places.googleapis.com/v1/places/${placeId}?languageCode=ja`;
@@ -490,6 +501,7 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   const data: GooglePlacesAutoDetailsApiResponse = await response.json();
   console.log(data)
 
+
   const results: placeDetailsAll = {}
 
   if (fields.includes('location') && data.location) {
@@ -510,14 +522,31 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
     // }
     // のように挿入する
   }
+  if (fields.includes('displayName') && data.displayName?.text) {
+    results.displayName = data.displayName.text
+  }
 
+  if (fields.includes('primaryType') && data.primaryType) {
+    results.primaryType = data.primaryType
+  }
+
+  if (fields.includes('photos')) {
+    results.photoUrl = data.photos?.[0]?.name
+      ? await getPhotoUrl(data.photos[0].name, 1200)
+      : "/no_image.png";
+    // ✅配列に対してもオプショナルは使える
+    // オブジェクト専用ではない
+  }
+
+
+  console.log(results)
 
   return { data: results }
-
+  // ✅呼び出し元が分割代入（{}）で受け取る場合、
+  // 関数側は対応するキーを持つ「オブジェクト」を返す必要がある。
 }
 
 
-// 
 export async function fetchLocation() {
   const DEFAULT_LOCATION = {
     lat: 35.6669248,

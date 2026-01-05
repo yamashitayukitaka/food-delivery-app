@@ -2,6 +2,7 @@ import { Heart } from 'lucide-react'
 import Image from 'next/image'
 import React from 'react'
 import { Restaurant } from "@/types";
+import Link from 'next/link';
 
 // ------------------------------------------------------
 interface RestaurantCardProps {
@@ -33,7 +34,7 @@ export default async function RestaurantCard({ restaurant }: RestaurantCardProps
 
   return (
     <div className='relative'>
-      {/* <Link href={`/restaurants/${id}`} className='inset-0 absolute z-10'></Link> */}
+      <Link href={`/restaurant/${restaurant.id}`} className='inset-0 absolute z-10'></Link>
       <div className="relative aspect-video rounded-lg overflow-hidden">
         <Image
           className='object-cover'

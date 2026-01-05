@@ -24,6 +24,10 @@ import { fetchLocation, fetchRamenRestaurants } from "@/lib/restaurants/api"
 import { fetchRestaurants } from "@/lib/restaurants/api"
 import RestaurantList from "@/components/ui/restaurant-list";
 import Categories from "@/components/ui/categories";
+import { fetchMenus } from "@/lib/menus/api";
+import MenuList from "@/components/menu-list";
+import MenuCard from "@/components/menu-card";
+import { useModal } from "../context/modalContext";
 
 
 export default async function Home() {
@@ -41,7 +45,18 @@ export default async function Home() {
   // 分割代入でキー名を変数名することでそれぞれの値を受け取ることができる
   // ✅上記の場合は一旦dataという変数名で値受け取ってから変数名を nearbyRamenRestaurants に変更している
 
+  const restaurant = nearbyRamenRestaurants?.[0];
+  const primaryType = restaurant?.primaryType;
+  // ✅オプショナルチェイニングは配列番号の前に.(ドット）をつけ忘れないようにする
 
+
+  const { data: menus, error: menusError } = primaryType ? await fetchMenus(primaryType) : { data: [] };
+  // ✅primaryType が存在する場合は fetchMenus を実行し、存在しない場合は data に空配列、error は undefined になる
+
+  // ✅{ data: [] }と言う記述方法について↓
+  //左辺が分割代入ということは 右辺はdataまたはerrorをキーにもつオブジェクトでなければならない なので左辺の分割代入のdataに空配列を渡すためには、左辺を｛data:[]}としなければならない
+
+  console.log('unnko', menus)
 
 
   return (
@@ -125,6 +140,23 @@ export default async function Home() {
       {/* </CarouselContainer>
       </Section> */}
 
+      {/* メニュー情報表示 */}
+      {!menus ? (
+        <p>{menusError}</p>
+      ) : menus.length > 0 ? (
+        <Section
+          title={restaurant?.restaurantName}
+          expandedContent={<MenuList menus={menus} />}
+        >
+          <CarouselContainer slideToShow={6}>
+            {menus.map((menu) => (
+              <MenuCard menu={menu} />
+            ))}
+          </CarouselContainer>
+        </Section>
+      ) : (
+        <p>近くにラーメン店がありません</p>
+      )}
     </>
 
   );
