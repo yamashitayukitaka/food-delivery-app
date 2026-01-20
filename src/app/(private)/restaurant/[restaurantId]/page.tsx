@@ -48,7 +48,7 @@ export default async function RestaurantPage({
   const primaryType = restaurant?.primaryType
   console.log('primaryType', primaryType)
 
-  const { data: categoryMenus, error: munusError } = primaryType ? await fetchCategoryMenus(primaryType,searchMenu) : { data: [] };
+  const { data: categoryMenus, error: munusError } = primaryType ? await fetchCategoryMenus(primaryType, searchMenu) : { data: [] };
 
 
   if (!restaurant) notFound();
@@ -93,6 +93,7 @@ export default async function RestaurantPage({
       ) : categoryMenus.length > 0 ?
         (<MenuContent
           categoryMenus={categoryMenus}
+          restaurantId={restaurantId}
         />) : (<p>メニューが見つかりません</p>)
       }
     </>

@@ -3,7 +3,7 @@
 // (private) 外のページやレイアウトには影響しない
 
 
-import Header from "@/components/ui/header";
+import Header from "@/components/header";
 export default function PrivatePageLayout({
   children,
 }: Readonly<{

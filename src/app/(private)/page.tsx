@@ -28,6 +28,7 @@ import { fetchMenus } from "@/lib/menus/api";
 import MenuList from "@/components/menu-list";
 import MenuCard from "@/components/menu-card";
 import { useModal } from "../context/modalContext";
+import Link from "next/link";
 
 
 export default async function Home() {
@@ -57,7 +58,6 @@ export default async function Home() {
   //左辺が分割代入ということは 右辺はdataまたはerrorをキーにもつオブジェクトでなければならない なので左辺の分割代入のdataに空配列を渡すためには、左辺を｛data:[]}としなければならない
 
   console.log('unnko', menus)
-
 
   return (
     <>
@@ -142,20 +142,24 @@ export default async function Home() {
 
       {/* メニュー情報表示 */}
       {!menus ? (
+        // ✅menusがundefinedの場合
         <p>{menusError}</p>
-      ) : menus.length > 0 ? (
+      ) : menus.length > 0 && restaurant ? (
+        // ✅ menus が存在し、かつ配列の要素数が1以上で、restaurant が存在する場合
         <Section
           title={restaurant?.restaurantName}
           expandedContent={<MenuList menus={menus} />}
         >
           <CarouselContainer slideToShow={6}>
             {menus.map((menu) => (
-              <MenuCard menu={menu} />
+              <MenuCard
+                menu={menu}
+              />
             ))}
           </CarouselContainer>
         </Section>
       ) : (
-        <p>近くにラーメン店がありません</p>
+        <p>メニューがありません</p>
       )}
     </>
 

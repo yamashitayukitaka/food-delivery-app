@@ -2,6 +2,7 @@
 import { Menu } from "@/types";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
 
+
 interface ModalContextType {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>
@@ -22,7 +23,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
 
   const closeModal = () => {
     setIsOpen(false)
-    setSelectedItem(null)
+    setTimeout(() => setSelectedItem(null), 200)
   }
 
   return (

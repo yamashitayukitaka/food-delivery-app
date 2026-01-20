@@ -108,3 +108,22 @@ export interface Menu {
   photoUrl: string;
   price: number;
 }
+
+export interface Cart {
+  restaurantName: string | undefined;
+  photoUrl: string;
+  id: number;
+  restaurant_id: string;
+  cart_items: CartItem[];
+}
+
+export interface CartItem {
+  quantity: number;
+  id: number;
+  menus: {
+    id: number;
+    name: string;
+    price: number;
+    photoUrl: string;
+  };
+}

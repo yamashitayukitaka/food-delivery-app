@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import React from 'react'
 import MenuSheet from "@/components/ui/menu-sheet";
-import PlaceSearchBar from './place-search-bar';
-import AddressModal from './address-modal';
+import PlaceSearchBar from './ui/place-search-bar';
+import AddressModal from './ui/address-modal';
 import { fetchLocation } from '@/lib/restaurants/api';
+import Cart from './cart';
 
 
 
@@ -24,7 +25,7 @@ const Header = async () => {
         <div className="flex-1">
           <PlaceSearchBar lat={lat} lng={lng} />
         </div>
-        <div>カート</div>
+        <Cart />
       </div>
     </header>
   )

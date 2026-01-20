@@ -16,17 +16,22 @@ import { useState } from "react";
 import { InView } from "react-intersection-observer";
 import MenuModal from "./menu-modal";
 import { useModal } from "@/app/context/modalContext";
+import { useCartVisibility } from "@/app/context/cartContext";
+import { useCart } from "@/hooks/cart/useCart";
 
 
 interface MenuContentProps {
   categoryMenus: categoryMenu[];
+  restaurantId: string
 }
 
-export default function MenuContent({ categoryMenus }: MenuContentProps) {
-  const { isOpen, setIsOpen, openModal, closeModal, selectedItem } = useModal()
-  const [activeCategoryId, SetActiveCategoryId] = useState<string>(categoryMenus[0].id)
+export default function MenuContent({ categoryMenus, restaurantId }: MenuContentProps) {
+  const { isOpen, openModal, closeModal, selectedItem } = useModal()
+  const { targetCart, mutateCart } = useCart(restaurantId, false);
+  const [activeCategoryId, setActiveCategoryId] = useState(categoryMenus[0].id)
   // ✅reactの設計概念として通常、stateは親コンポーネントで管理して 子コンポネントにpropsで渡す
   // React は Top-down（上から下） のデータフローを前提にしています。
+  const { openCart } = useCartVisibility();
 
   const handleSelectCategory = (categoryId: string) => {
     console.log(categoryId)
@@ -34,7 +39,7 @@ export default function MenuContent({ categoryMenus }: MenuContentProps) {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
       // scrollIntoView は DOM Element に標準で定義されているメソッド
-      SetActiveCategoryId(categoryId)
+      setActiveCategoryId(categoryId)
     }
   }
 
@@ -48,14 +53,13 @@ export default function MenuContent({ categoryMenus }: MenuContentProps) {
       <div className="w-3/4">
         {categoryMenus.map((category) => (
           <InView
-            as="div"
-            threshold={0.7}
             className="scroll-mt-16"
             id={`${category.id}-menu`}
             key={category.id}
-            onChange={(inView) => {
-              inView && SetActiveCategoryId(category.id)
-            }}
+            as="div"
+            threshold={0.7}
+            onChange={(inView, entry) => inView && setActiveCategoryId(category.id)
+            }
           >
 
             {/* ✅id や className は「文字列として扱われる必要がある */}
@@ -78,7 +82,7 @@ export default function MenuContent({ categoryMenus }: MenuContentProps) {
                     <FlatMenuCard
                       menu={menu}
                       key={menu.id}
-                    // ✅keyはpropsではなくコンポネント自体に渡している
+                      // ✅keyはpropsではなくコンポネント自体に渡している
                       onClick={openModal}
                     />
                   ))}
@@ -92,6 +96,11 @@ export default function MenuContent({ categoryMenus }: MenuContentProps) {
       <MenuModal
         isOpen={isOpen}
         closeModal={closeModal}
+        selectedItem={selectedItem}
+        restaurantId={restaurantId}
+        openCart={openCart}
+        targetCart={targetCart}
+        mutateCart={mutateCart}
       />
     </div>
   );
