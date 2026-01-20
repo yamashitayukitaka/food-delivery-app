@@ -115,6 +115,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results)
 
   } catch (error) {
-    return NextResponse.json({ error: '予期せぬエラーが発生しました' })
+    return NextResponse.json({ error: '予期せぬエラーが発生しました' },
+      { status: 500 })
   }
 }
