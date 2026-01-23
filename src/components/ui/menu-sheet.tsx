@@ -93,7 +93,7 @@ const MenuSheet = async () => {
         {/* メニューエリア */}
         <ul className="space-y-4">
           <li>
-            <Link href={"orders"} className="flex items-center gap-4">
+            <Link href={"/orders"} className="flex items-center gap-4">
               <Bookmark fill="bg-primary" />
               <span className="font-bold">ご注文内容</span>
             </Link>
