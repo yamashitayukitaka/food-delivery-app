@@ -191,3 +191,74 @@ export async function updateCartItemAction(quantity: number, cartItemId: number,
     throw new Error("カートアイテムの更新に失敗しました。");
   }
 }
+
+export async function checkoutAction(
+  cartId: number,
+  fee: number,
+  service: number,
+  delivery: number
+) {
+  const supabase = await createClient();
+  //カートデータを取得
+  const { data: cart, error: cartError } = await supabase
+    .from("carts")
+    .select(`id,restaurant_id,user_id,cart_items (id,quantity,menu_id,menus (id,name,price,image_path))`)
+    .eq("id", cartId)
+    .single();
+
+  if (cartError) {
+    console.error("カートの取得に失敗しました。", cartError);
+    throw new Error("カートの取得に失敗しました。");
+  }
+
+  const { restaurant_id, user_id, cart_items } = cart;
+
+  const subtal = cart_items.reduce(
+    (sum, item) => sum + item.quantity * item.menus.price,
+    0
+  );
+  const total = fee + service + delivery + subtal;
+  //ordersテーブルにデータを挿入
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .insert({
+      restaurant_id: restaurant_id,
+      user_id: user_id,
+      fee,
+      service,
+      delivery,
+      subtotal_price: subtal,
+      total_price: total,
+    })
+    .select("id")
+    .single();
+  if (orderError) {
+    console.error("注文の作成に失敗しました", orderError);
+    throw new Error("注文の作成に失敗しました");
+  }
+  const orderItems = cart_items.map((item) => ({
+    quantity: item.quantity,
+    order_id: order.id,
+    menu_id: item.menu_id,
+    price: item.menus.price,
+    name: item.menus.name,
+    image_path: item.menus.image_path,
+  }));
+  //orders_itemsテーブルにデータを挿入
+  const { error: orderItemsError } = await supabase
+    .from("order_items")
+    .insert(orderItems);
+  if (orderItemsError) {
+    console.error("注文アイテムの登録に失敗しました", orderItemsError);
+    throw new Error("注文アイテムの登録に失敗しました");
+  }
+  //カートデータを削除
+  const { error: deleteError } = await supabase
+    .from("carts")
+    .delete()
+    .eq("id", cartId);
+  if (deleteError) {
+    console.error("カート削除失敗", deleteError);
+    throw new Error("カート削除失敗");
+  }
+}
