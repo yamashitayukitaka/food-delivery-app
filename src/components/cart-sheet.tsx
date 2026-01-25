@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { updateCartItemAction } from "@/app/(private)/actions/cartAction";
-import { KeyedMutator, mutate } from "swr";
+import { KeyedMutator } from "swr";
 import { calculateItemTotal } from "@/lib/cart/utils";
 
 interface CartSheetProps {

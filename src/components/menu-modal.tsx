@@ -9,7 +9,7 @@ import {
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { Cart, CartItem, Menu } from "@/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { addToCartAction } from "@/app/(private)/actions/cartAction";
 import { KeyedMutator } from "swr";
 

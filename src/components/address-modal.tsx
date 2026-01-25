@@ -19,7 +19,7 @@ import { useEffect, useState } from "react"
 import { useDebouncedCallback } from 'use-debounce';
 import { v4 as uuidv4 } from 'uuid';
 import { AddressSuggestion } from "@/types";
-import { AlertCircle, LoaderCircle, MapPin, Trash, Trash2 } from "lucide-react";
+import { AlertCircle, LoaderCircle, MapPin, Trash2 } from "lucide-react";
 import { deleteAddressAction, selectAddressAction, selectSuggestionAction } from "@/app/(private)/actions/AddressActions";
 import useSWR from "swr";
 import { Address } from "@/types";

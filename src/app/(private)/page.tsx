@@ -27,8 +27,7 @@ import Categories from "@/components/categories";
 import { fetchMenus } from "@/lib/menus/api";
 import MenuList from "@/components/menu-list";
 import MenuCard from "@/components/menu-card";
-import { useModal } from "../context/modalContext";
-import Link from "next/link";
+
 
 
 export default async function Home() {

@@ -9,7 +9,6 @@ import {
   SheetClose,
 } from "@/components/ui/sheet"
 import { Heart, Menu } from 'lucide-react';
-import React, { use } from 'react'
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

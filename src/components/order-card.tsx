@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { calculateSubtotal } from "@/lib/cart/utils";
 import { Order } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
