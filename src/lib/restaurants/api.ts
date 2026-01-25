@@ -14,7 +14,7 @@
 
 
 
-import { GooglePlacesAutoDetailsApiResponse, GooglePlacesSearchApiResponse, placeDetailsAll, Restaurant } from "@/types";
+import { GooglePlacesAutoDetailsApiResponse, GooglePlacesSearchApiResponse, placeDetailsAll } from "@/types";
 import { transformPlaceResults } from "./utils";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";

@@ -58,7 +58,7 @@ export default function MenuContent({ categoryMenus, restaurantId }: MenuContent
             key={category.id}
             as="div"
             threshold={0.7}
-            onChange={(inView, entry) => inView && setActiveCategoryId(category.id)
+            onChange={(inView) => inView && setActiveCategoryId(category.id)
             }
           >
 

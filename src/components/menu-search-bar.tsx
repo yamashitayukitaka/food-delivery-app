@@ -1,7 +1,6 @@
 "use client";
 // ✅onChangeを使っているので、クライアントコンポーネントに
 
-import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { usePathname, useSearchParams } from "next/navigation";
