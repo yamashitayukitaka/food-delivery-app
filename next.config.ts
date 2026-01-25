@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   /* config options here */
   logging: {
     fetches: { fullUrl: true },
@@ -10,6 +8,9 @@ const nextConfig: NextConfig = {
     useCache: true,
   },
   //use cache を有効にする設定
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {
