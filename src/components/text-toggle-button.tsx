@@ -4,7 +4,7 @@
 
 import React, { use } from 'react'
 import { useState } from "react"
-import { Button } from "./button"
+import { Button } from "./ui/button"
 
 
 // TextToggleButtonを親コンポーネントがサーバーコンポネントである場面で使うので

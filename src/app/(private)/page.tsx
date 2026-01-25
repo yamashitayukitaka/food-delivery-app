@@ -17,13 +17,13 @@
 // ルート (/) に対応する page.tsx として扱われます。
 
 // ✅(private) が URL に影響しないため、http://localhost:3000 で最優先の page.tsx とみなされる
-import Section from "@/components/ui/section";
-import CarouselContainer from "@/components/ui/carousel-container";
-import RestaurantCard from "@/components/ui/restaurant-card";
+import Section from "@/components/section";
+import CarouselContainer from "@/components/carousel-container";
+import RestaurantCard from "@/components/restaurant-card";
 import { fetchLocation, fetchRamenRestaurants } from "@/lib/restaurants/api"
 import { fetchRestaurants } from "@/lib/restaurants/api"
-import RestaurantList from "@/components/ui/restaurant-list";
-import Categories from "@/components/ui/categories";
+import RestaurantList from "@/components/restaurant-list";
+import Categories from "@/components/categories";
 import { fetchMenus } from "@/lib/menus/api";
 import MenuList from "@/components/menu-list";
 import MenuCard from "@/components/menu-card";

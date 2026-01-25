@@ -1,6 +1,6 @@
 import CartSummary from "@/components/cart-summary";
 import PaymentModal from "@/components/payment-modal";
-import AddressModal from "@/components/ui/address-modal";
+import AddressModal from "@/components/address-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Banknote, Briefcase } from "lucide-react";
 

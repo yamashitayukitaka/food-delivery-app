@@ -1,4 +1,4 @@
-import Category from "@/components/ui/category";
+import Category from "@/components/category";
 import { categoryMenu, Menu } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";

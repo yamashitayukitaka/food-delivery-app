@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import React from 'react'
-import MenuSheet from "@/components/ui/menu-sheet";
-import PlaceSearchBar from './ui/place-search-bar';
-import AddressModal from './ui/address-modal';
+
+
+import AddressModal from './address-modal';
 import { fetchLocation } from '@/lib/restaurants/api';
 import Cart from './cart';
+import PlaceSearchBar from './place-search-bar';
+import MenuSheet from './menu-sheet';
 
 
 
