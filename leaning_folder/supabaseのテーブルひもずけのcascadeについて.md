@@ -1,7 +1,0 @@
-✅supabaseのテーブルひもずけのcascadeについて
-
-例えば
-addressesテーブルのuser_id（接続元）とauth.usersテーブルのid（接続先）が接続していた場合、
-auth.usersテーブルのid（接続先）が削除された場合の設定として
-cascadeを選択しておくと
-auth.usersテーブルのidと同一の値のaddressesテーブルのuser_idの行は自動的に削除される

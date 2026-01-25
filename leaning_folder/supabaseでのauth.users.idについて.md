@@ -1,6 +1,0 @@
-✅authテーブルとはsupabase google authなどを使ったときに自動で作成されるsupabase authの認証用テーブルのこと
-
-Supabase Auth が管理するユーザーテーブルは内部的には auth.users（システムテーブル）として存在します。
-このテーブルにはユーザーごとの UUID が id カラムとして格納されています。
-
-uuidはテーブル自体にはuuidと表示しているが内部的にはidと言うキー名で処理している
