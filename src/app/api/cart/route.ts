@@ -45,8 +45,8 @@ export async function GET(request: NextRequest) {
       const { data: restaurantData, error } = await getPlaceDetails(cart.restaurant_id, ['displayName', 'photos'])
 
       if (!restaurantData || error) {
-        throw new Error(`レストランデータの取得に失敗しました。${error}`)
-
+        // throw new Error(`レストランデータの取得に失敗しました。${error}`)
+        console.error(`レストランデータの取得に失敗しました。${error}`);
       }
       return {
         ...cart,
@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
             },
           };
         }),
-        restaurantName: restaurantData.displayName,
-        photoUrl: restaurantData.photoUrl!,
+        restaurantName: restaurantData?.displayName ?? '不明なお店',
+        photoUrl: restaurantData?.photoUrl ?? '/no_image.png',
       };
       // ✅アロー関数で {} を使うと「関数ブロック」として解釈されるため、
       // オブジェクト✅返したい場合は return を使うか、() で包む必要が✅る

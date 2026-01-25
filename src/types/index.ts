@@ -127,3 +127,26 @@ export interface CartItem {
     photoUrl: string;
   };
 }
+
+export interface Order {
+  order_items: OrderItem[];
+  restaurantName: string;
+  photoUrl: string;
+  id: number;
+  restaurant_id: string;
+  user_id: string | null;
+  created_at: string;
+  fee: number;
+  service: number;
+  delivery: number;
+  subtotal_price: number;
+  total_price: number;
+}
+
+export interface OrderItem {
+  photoUrl: string;
+  quantity: number;
+  id: number;
+  price: number;
+  name: string;
+}
