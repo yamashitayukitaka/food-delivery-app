@@ -1,6 +1,6 @@
 import { fetchCategoryRestaurants, fetchLocation, fetchRestaurantsByKeyword } from "@/lib/restaurants/api";
-import RestaurantList from "@/components/ui/restaurant-list";
-import Categories from "@/components/ui/categories";
+import RestaurantList from "@/components/restaurant-list";
+import Categories from "@/components/categories";
 import { redirect } from "next/navigation";
 
 

@@ -8,8 +8,8 @@
 
 import CategorySidebar from "./category-sidebar";
 import { categoryMenu } from "@/types";
-import Section from "./ui/section";
-import CarouselContainer from "./ui/carousel-container";
+import Section from "./section";
+import CarouselContainer from "./carousel-container";
 import MenuCard from "./menu-card";
 import FlatMenuCard from "./flat-menu-card";
 import { useState } from "react";

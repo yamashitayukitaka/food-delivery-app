@@ -24,7 +24,7 @@ import { deleteAddressAction, selectAddressAction, selectSuggestionAction } from
 import useSWR from "swr";
 import { Address } from "@/types";
 import { cn } from "@/lib/utils";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 
 interface AddressResponse {
