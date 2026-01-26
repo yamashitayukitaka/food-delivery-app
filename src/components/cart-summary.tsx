@@ -83,15 +83,34 @@ const CartSummary = ({ restaurantId }: CartSummaryProps) => {
     }
   }
 
+  const startCheckout = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cart_items: cart.cart_items,
+        })
+      }
+      );
+      const responseData = await response.json();
+      if (responseData) {
+        push(responseData.checkout_url)
+      }
+    } catch {
+
+    }
+  }
 
   const handleCheckout = async () => {
     try {
       await checkoutAction(cart.id, fee, service, delivery);
+      await startCheckout();
       mutateCart(
         (prevCarts) => prevCarts?.filter((c) => c.id !== cart.id),
         false
       );
-      push(`/restaurant/${cart.restaurant_id}/checkout/complete`);
+      // push(`/restaurant/${cart.restaurant_id}/checkout/complete`);
     } catch (error) {
       console.error(error);
       alert('エラーが発生しました')
